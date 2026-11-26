@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Islas AR · Experiencia Móvil 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+  :root{
+    --bg:#061118;
+    --surface:#0c1e29;
+    --line:rgba(247,242,232,.16);
+    --line-2:rgba(247,242,232,.32);
+    --ink:#f7f2e8;
+    --ink-2:#c4d6e0;
+    --ink-3:#849fae;
+    --coral:#eb7c52;
+    --sand:#f1dfc0;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
+    --r-lg:24px;
+    --r-md:16px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+
+  *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100dvh;
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  body.in-ar-mode{
+    overflow:hidden;
+    height:100dvh;
+  }
+
+  /* ================= CATÁLOGO INICIAL ================= */
+  .catalog-view{
+    max-width:1280px;
+    margin:0 auto;
+    padding:24px 16px 40px;
+  }
+  .catalog-view.is-hidden{display:none}
+
+  .hero{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:24px;
+  }
+  .hero-kicker{
+    font-size:.72rem;
+    font-weight:700;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--coral);
+  }
+  .hero-title{
+    margin:0;
+    font-family:var(--serif);
+    font-size:clamp(1.75rem,4vw,2.4rem);
+    line-height:1.1;
+  }
+  .hero-sub{
+    margin:0;
+    font-size:.9rem;
+    color:var(--ink-2);
+    max-width:60ch;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:16px;
+  }
+  @media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:580px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    display:flex;
+    flex-direction:column;
+    padding:0;
+    text-align:left;
+    border-radius:var(--r-lg);
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(16,39,54,.82) 0%,rgba(8,20,28,.98) 100%);
+    color:var(--ink);
+    overflow:hidden;
+    cursor:pointer;
+    transition:transform .2s var(--ease),border-color .2s var(--ease);
+  }
+  .card:hover{transform:translateY(-4px);border-color:var(--line-2)}
+
+  .card-thumb{
+    height:176px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    background:radial-gradient(circle at 50% 60%,rgba(235,124,82,.16),rgba(6,17,24,.85) 75%);
+  }
+  .card-thumb img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    filter:drop-shadow(0 12px 20px rgba(0,0,0,.6));
+  }
+  .card-thumb.is-empty img{display:none}
+  .card-fallback{
+    display:none;
+    font-size:.8rem;
+    font-weight:600;
+    color:var(--ink-3);
+  }
+  .card-thumb.is-empty .card-fallback{display:block}
+
+  .card-body{
+    padding:16px 20px 20px;
+    border-top:1px solid var(--line);
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .card-num{
+    font-size:.7rem;
+    font-weight:700;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--coral);
+  }
+  .card-name{
+    margin:0;
+    font-family:var(--serif);
+    font-size:1.2rem;
+  }
+  .card-desc{
+    margin:0;
+    font-size:.84rem;
+    color:var(--ink-2);
+    line-height:1.35;
+  }
+
+  /* ================= VISTA MÓVIL ESTILO AR (REFERENCIA) ================= */
+  .ar-stage{
+    display:none;
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100dvh;
+    background:radial-gradient(circle at 50% 42%,#1d4863 0%,#061118 85%);
+    overflow:hidden;
+    z-index:30;
+  }
+  .ar-stage.is-active{display:block}
+
+  /* Video de cámara en vivo detrás del modelo 3D */
+  .cam-feed{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:1;
+    opacity:0;
+    transition:opacity .35s ease;
+  }
+  .cam-feed.is-live{opacity:1}
+
+  /* Sutil viñeta para que los controles siempre se lean bien sobre la cámara */
+  .ar-vignette{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    background:
+      linear-gradient(180deg,rgba(4,10,16,.55) 0%,transparent 22%,transparent 74%,rgba(4,10,16,.72) 100%);
+  }
+
+  /* Visor 3D transparente centrado */
+  .mv-wrap{
+    position:absolute;
+    inset:0;
+    z-index:3;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  model-viewer{
+    width:100%;
+    height:100%;
+    background:transparent;
+    --poster-color:transparent;
+  }
+
+  /* Anillo luminoso en la base estilo referencia */
+  .ground-ring{
+    position:absolute;
+    bottom:23dvh;
+    left:50%;
+    transform:translateX(-50%) rotateX(72deg);
+    width:min(68vw,300px);
+    height:min(68vw,300px);
+    border-radius:50%;
+    border:3px solid rgba(235,124,82,.75);
+    box-shadow:0 0 28px rgba(235,124,82,.55),inset 0 0 22px rgba(235,124,82,.35);
+    pointer-events:none;
+    z-index:2;
+  }
+
+  /* Barra superior estilo app móvil */
+  .hud-top{
+    position:absolute;
+    top:max(16px,env(safe-area-inset-top));
+    left:16px;
+    right:16px;
+    z-index:10;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    pointer-events:none;
+  }
+  .hud-top > *{pointer-events:auto}
+
+  .circle-btn{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.45);
+    background:rgba(8,20,30,.52);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    color:#fff;
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+    font-size:1.15rem;
+    box-shadow:0 8px 20px rgba(0,0,0,.35);
+    transition:transform .15s ease,background .15s ease;
+  }
+  .circle-btn:active{transform:scale(.92)}
+
+  .island-pill{
+    padding:8px 18px;
+    border-radius:999px;
+    background:rgba(8,20,30,.62);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.28);
+    text-align:center;
+    max-width:56vw;
+  }
+  .island-pill-kicker{
+    display:block;
+    font-size:.62rem;
+    font-weight:700;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--coral);
+  }
+  .island-pill-name{
+    display:block;
+    font-family:var(--serif);
+    font-size:.98rem;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  /* Interruptor AR arriba a la derecha (igual a la referencia) */
+  .ar-switch{
+    height:42px;
+    padding:0 12px 0 14px;
+    border-radius:999px;
+    border:1.5px solid rgba(255,255,255,.45);
+    background:rgba(8,20,30,.58);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    color:#fff;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--sans);
+    font-size:.8rem;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 8px 20px rgba(0,0,0,.35);
+  }
+  .ar-switch-dot{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#64748b;
+    transition:background .2s ease,box-shadow .2s ease;
+  }
+  .ar-switch.is-on .ar-switch-dot{
+    background:#22d3ee;
+    box-shadow:0 0 12px #22d3ee;
+  }
+
+  /* Barra inferior de 3 botones estilo referencia */
+  .hud-bottom{
+    position:absolute;
+    bottom:max(20px,env(safe-area-inset-bottom));
+    left:20px;
+    right:20px;
+    z-index:10;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width:440px;
+    margin:0 auto;
+    pointer-events:none;
+  }
+  .hud-bottom > *{pointer-events:auto}
+
+  .side-action{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    background:none;
+    border:none;
+    color:#fff;
+    cursor:pointer;
+    padding:0;
+    font-family:var(--sans);
+  }
+  .side-action-circle{
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.45);
+    background:rgba(8,20,30,.58);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    display:grid;
+    place-items:center;
+    font-size:1.25rem;
+    box-shadow:0 10px 24px rgba(0,0,0,.4);
+  }
+  .side-action span{
+    font-size:.68rem;
+    font-weight:600;
+    text-shadow:0 1px 4px rgba(0,0,0,.8);
+  }
+
+  /* Botón central principal */
+  .center-orb{
+    width:74px;
+    height:74px;
+    border-radius:50%;
+    border:3px solid #fff;
+    background:linear-gradient(180deg,var(--coral) 0%,#c85228 48%,#f7f2e8 52%,#e2d9c8 100%);
+    box-shadow:0 12px 30px rgba(0,0,0,.55);
+    cursor:pointer;
+    position:relative;
+    display:grid;
+    place-items:center;
+    transition:transform .15s ease;
+  }
+  .center-orb::after{
+    content:"";
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#fff;
+    border:3px solid #1e293b;
+  }
+  .center-orb:active{transform:scale(.92)}
+
+  .status-toast{
+    position:absolute;
+    bottom:112px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:9;
+    padding:8px 16px;
+    border-radius:999px;
+    background:rgba(6,17,24,.78);
+    border:1px solid rgba(255,255,255,.2);
+    font-size:.76rem;
+    color:var(--sand);
+    white-space:nowrap;
+    max-width:90vw;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    pointer-events:none;
+  }
+
+  /* ================= MODALES (GALERÍA / QR / SELECTOR) ================= */
+  .modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:60;
+    background:rgba(4,10,16,.65);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    align-items:flex-end;
+    justify-content:center;
+    padding:16px;
+  }
+  @media (min-width:640px){.modal{align-items:center}}
+  .modal.is-open{display:flex}
+
+  .sheet{
+    width:min(100%,520px);
+    max-height:84dvh;
+    overflow-y:auto;
+    border-radius:24px;
+    background:#0d212e;
+    border:1px solid rgba(255,255,255,.2);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .sheet-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .sheet-title{
+    margin:0;
+    font-family:var(--serif);
+    font-size:1.25rem;
+  }
+  .btn-x{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    border:1px solid var(--line-2);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:1.2rem;
+    cursor:pointer;
+  }
+
+  .gallery-box{
+    border-radius:16px;
+    overflow:hidden;
+    background:#061118;
+    border:1px solid var(--line);
+  }
+  .gallery-box img{
+    width:100%;
+    height:240px;
+    object-fit:contain;
+    display:block;
+    padding:12px;
+  }
+  .gallery-cap{
+    padding:10px 14px;
+    font-size:.82rem;
+    color:var(--ink-2);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(255,255,255,.04);
+  }
+  .row-btns{
+    display:flex;
+    gap:10px;
+  }
+  .pill-btn{
+    flex:1;
+    height:42px;
+    border-radius:12px;
+    border:1px solid var(--line-2);
+    background:rgba(255,255,255,.08);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:.84rem;
+    cursor:pointer;
+  }
+  .pill-btn.primary{
+    background:var(--coral);
+    border-color:var(--coral);
+    color:#061118;
+  }
+
+  .island-list{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .island-chip{
+    padding:12px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.05);
+    color:var(--ink);
+    text-align:left;
+    cursor:pointer;
+    font-family:var(--sans);
+  }
+  .island-chip.is-current{
+    border-color:var(--coral);
+    background:rgba(235,124,82,.18);
+  }
+  .island-chip strong{display:block;font-size:.88rem}
+  .island-chip small{color:var(--ink-3);font-size:.72rem}
+
+  .qr-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+  }
+  .qr-frame{
+    width:196px;
+    height:196px;
+    padding:12px;
+    border-radius:16px;
+    background:#fff;
+  }
+  .qr-frame img{width:100%;height:100%;display:block}
+  .url-input{
+    width:100%;
+    height:40px;
+    padding:0 12px;
+    border-radius:10px;
+    border:1px solid var(--line-2);
+    background:#061118;
+    color:var(--ink);
+    font-size:.8rem;
+  }
+</style>
+</head>
+<body>
+
+  <!-- VISTA CATÁLOGO (ESCRITORIO / INICIO) -->
+  <main id="catalogView" class="catalog-view">
+    <header class="hero">
+      <span class="hero-kicker">Recorrido Interactivo 3D</span>
+      <h1 class="hero-title">Islas AR</h1>
+      <p class="hero-sub">Selecciona una isla para proyectarla en cámara AR en tu celular o explorar su modelo 3D y galería.</p>
+    </header>
+    <div id="gridIslas" class="grid"></div>
+  </main>
+
+  <!-- VISTA INMERSIVA ESTILO APP MÓVIL AR -->
+  <section id="arStage" class="ar-stage" aria-label="Visor AR de Isla">
+    <video id="camFeed" class="cam-feed" autoplay playsinline muted></video>
+    <div class="ar-vignette"></div>
+    <div class="ground-ring" aria-hidden="true"></div>
+
+    <div class="hud-top">
+      <button id="btnExit" class="circle-btn" type="button" aria-label="Volver al catálogo">←</button>
+
+      <div class="island-pill">
+        <span id="hudNum" class="island-pill-kicker">Isla 01</span>
+        <span id="hudName" class="island-pill-name">Facultad</span>
+      </div>
+
+      <button id="btnArToggle" class="ar-switch" type="button" aria-label="Alternar cámara AR">
+        <span>AR</span>
+        <span class="ar-switch-dot"></span>
+      </button>
+    </div>
+
+    <div class="mv-wrap">
+      <model-viewer
+        id="mv"
+        camera-controls
+        touch-action="pan-y"
+        auto-rotate
+        rotation-per-second="18deg"
+        interaction-prompt="none"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        ar-scale="auto"
+        shadow-intensity="1"
+        shadow-softness="0.8"
+        alt="Modelo 3D de la isla">
+      </model-viewer>
+    </div>
+
+    <div id="statusToast" class="status-toast">Arrastra con un dedo para girar · Pellizca para acercar</div>
+
+    <div class="hud-bottom">
+      <button id="btnInfo" class="side-action" type="button">
+        <span class="side-action-circle">🖼️</span>
+        <span>Galería</span>
+      </button>
+
+      <button id="btnCenterAction" class="center-orb" type="button" aria-label="Centrar vista o abrir QR"></button>
+
+      <button id="btnSwitchIsland" class="side-action" type="button">
+        <span class="side-action-circle">🏝️</span>
+        <span>Islas</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- MODAL GALERÍA E INFORMACIÓN -->
+  <div id="modalGallery" class="modal" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2 id="galTitle" class="sheet-title">Galería</h2>
+        <button id="closeGal" class="btn-x" type="button">×</button>
+      </div>
+      <p id="galDesc" style="margin:0;font-size:.86rem;color:var(--ink-2)"></p>
+      <div id="galBox" class="gallery-box">
+        <img id="galImg" alt="">
+        <div class="gallery-cap">
+          <span id="galCap"></span>
+          <strong id="galCount"></strong>
+        </div>
+      </div>
+      <div class="row-btns">
+        <button id="prevSlide" class="pill-btn" type="button">← Anterior</button>
+        <button id="nextSlide" class="pill-btn" type="button">Siguiente →</button>
+      </div>
+      <div class="row-btns">
+        <button id="btnOpenNativeAr" class="pill-btn primary" type="button">Proyectar en piso (AR Nativo)</button>
+        <button id="btnShowQrFromGal" class="pill-btn" type="button">Ver QR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SELECTOR RÁPIDO DE ISLAS -->
+  <div id="modalPicker" class="modal" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2 class="sheet-title">Cambiar de isla</h2>
+        <button id="closePicker" class="btn-x" type="button">×</button>
+      </div>
+      <div id="pickerList" class="island-list"></div>
+    </div>
+  </div>
+
+  <!-- MODAL QR -->
+  <div id="modalQr" class="modal" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2 id="qrTitle" class="sheet-title">Escanear en celular</h2>
+        <button id="closeQr" class="btn-x" type="button">×</button>
+      </div>
+      <div class="qr-wrap">
+        <div class="qr-frame"><img id="qrImg" alt="Código QR"></div>
+        <input id="qrUrl" class="url-input" type="text" readonly>
+        <button id="copyUrl" class="pill-btn primary" type="button" style="width:100%">Copiar enlace</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const ISLAS = [
+  {
+    nombre: "Facultad",
+    numero: "01",
+    descripcion: "Arquitectura principal, espacio académico y punto de articulación.",
+    modelo: "FACULTAD.glb",
+    portada: "facultad",
+    fotos: [
+      { archivo: "facultad-1", pie: "Vista general y volumen arquitectónico" },
+      { archivo: "facultad-2", pie: "Escala, acceso y relación con el entorno" },
+      { archivo: "facultad-3", pie: "Detalle del conjunto" }
+    ]
+  },
+  {
+    nombre: "Isla del Dibujo",
+    numero: "02",
+    descripcion: "Trazos, proporción, observación directa y construcción de forma.",
+    modelo: "ISLA-DEL-DIBUJO.glb",
+    portada: "isla-dibujo",
+    fotos: [
+      { archivo: "isla-dibujo-1", pie: "Vista general de la isla" },
+      { archivo: "isla-dibujo-2", pie: "Trazos y estructura" },
+      { archivo: "isla-dibujo-3", pie: "Detalle ilustrado" }
+    ]
+  },
+  {
+    nombre: "Isla de Libros",
+    numero: "03",
+    descripcion: "Narrativa impresa, archivo, secuencia editorial y memoria.",
+    modelo: "ISLA-DE-LIBROS.glb",
+    portada: "isla-de-libros",
+    fotos: [
+      { archivo: "isla-de-libros-1", pie: "Vista general" },
+      { archivo: "isla-de-libros-2", pie: "Composición editorial" },
+      { archivo: "isla-de-libros-3", pie: "Detalle del entorno" }
+    ]
+  },
+  {
+    nombre: "Isla del Taller",
+    numero: "04",
+    descripcion: "Experimentación material, prototipos y oficio manual.",
+    modelo: "ISLA-DEL-TALLER.glb",
+    portada: "isla-del-taller",
+    fotos: [
+      { archivo: "isla-del-taller-1", pie: "Vista general" },
+      { archivo: "isla-del-taller-2", pie: "Materiales y prototipos" },
+      { archivo: "isla-del-taller-3", pie: "Detalle de trabajo" }
+    ]
+  },
+  {
+    nombre: "Isla Escénica",
+    numero: "05",
+    descripcion: "Escenografía, atmósfera, luz y puesta en escena.",
+    modelo: "ISLA-ESCENICA.glb",
+    portada: "isla-escenica",
+    fotos: [
+      { archivo: "isla-escenica-1", pie: "Vista general" },
+      { archivo: "isla-escenica-2", pie: "Luz y puesta en escena" },
+      { archivo: "isla-escenica-3", pie: "Detalle escenográfico" }
+    ]
+  },
+  {
+    nombre: "Isla Pixel",
+    numero: "06",
+    descripcion: "Sistema digital, retícula, síntesis cromática y lenguaje interactivo.",
+    modelo: "ISLA-PIXEL.glb",
+    portada: "isla-pixel",
+    fotos: [
+      { archivo: "isla-pixel-1", pie: "Vista general" },
+      { archivo: "isla-pixel-2", pie: "Gráfica y retícula digital" },
+      { archivo: "isla-pixel-3", pie: "Detalle cromático" }
+    ]
+  }
+];
+
+const EXTS = [".png", ".jpg", ".jpeg", ".webp"];
+const imgCache = new Map();
+
+const el = {
+  catalogView: document.getElementById("catalogView"),
+  gridIslas: document.getElementById("gridIslas"),
+  arStage: document.getElementById("arStage"),
+  camFeed: document.getElementById("camFeed"),
+  btnExit: document.getElementById("btnExit"),
+  hudNum: document.getElementById("hudNum"),
+  hudName: document.getElementById("hudName"),
+  btnArToggle: document.getElementById("btnArToggle"),
+  mv: document.getElementById("mv"),
+  statusToast: document.getElementById("statusToast"),
+  btnInfo: document.getElementById("btnInfo"),
+  btnCenterAction: document.getElementById("btnCenterAction"),
+  btnSwitchIsland: document.getElementById("btnSwitchIsland"),
+  modalGallery: document.getElementById("modalGallery"),
+  closeGal: document.getElementById("closeGal"),
+  galTitle: document.getElementById("galTitle"),
+  galDesc: document.getElementById("galDesc"),
+  galBox: document.getElementById("galBox"),
+  galImg: document.getElementById("galImg"),
+  galCap: document.getElementById("galCap"),
+  galCount: document.getElementById("galCount"),
+  prevSlide: document.getElementById("prevSlide"),
+  nextSlide: document.getElementById("nextSlide"),
+  btnOpenNativeAr: document.getElementById("btnOpenNativeAr"),
+  btnShowQrFromGal: document.getElementById("btnShowQrFromGal"),
+  modalPicker: document.getElementById("modalPicker"),
+  closePicker: document.getElementById("closePicker"),
+  pickerList: document.getElementById("pickerList"),
+  modalQr: document.getElementById("modalQr"),
+  closeQr: document.getElementById("closeQr"),
+  qrTitle: document.getElementById("qrTitle"),
+  qrImg: document.getElementById("qrImg"),
+  qrUrl: document.getElementById("qrUrl"),
+  copyUrl: document.getElementById("copyUrl")
+};
+
+let currentIdx = 0;
+let camStream = null;
+let camOn = false;
+let slides = [];
+let slideIdx = 0;
+
+function probeImg(url) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => res(url);
+    img.onerror = () => res(null);
+    img.src = url;
+  });
+}
+
+async function resolveAssetImg(base) {
+  if (imgCache.has(base)) return imgCache.get(base);
+  const p = (async () => {
+    for (const ext of EXTS) {
+      const ok = await probeImg(base + ext);
+      if (ok) return ok;
+    }
+    return null;
+  })();
+  imgCache.set(base, p);
+  return p;
+}
+
+async function startCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    el.statusToast.textContent = "Cámara no disponible en este navegador · Modo 3D activo";
+    return false;
+  }
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false
+    });
+    el.camFeed.srcObject = camStream;
+    el.camFeed.classList.add("is-live");
+    el.btnArToggle.classList.add("is-on");
+    camOn = true;
+    el.statusToast.textContent = "Cámara AR activa · Arrastra para girar la isla";
+    return true;
+  } catch {
+    el.camFeed.classList.remove("is-live");
+    el.btnArToggle.classList.remove("is-on");
+    camOn = false;
+    el.statusToast.textContent = "Modo 3D activo (permite cámara para ver entorno real)";
+    return false;
+  }
+}
+
+function stopCamera() {
+  if (camStream) {
+    camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+  }
+  el.camFeed.srcObject = null;
+  el.camFeed.classList.remove("is-live");
+  el.btnArToggle.classList.remove("is-on");
+  camOn = false;
+}
+
+function toggleCamera() {
+  if (camOn) {
+    stopCamera();
+    el.statusToast.textContent = "Cámara pausada · Modo estudio 3D";
+  } else {
+    startCamera();
+  }
+}
+
+function buildCatalog() {
+  el.gridIslas.innerHTML = "";
+  ISLAS.forEach((isla, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "card";
+    btn.innerHTML = `
+      <div class="card-thumb">
+        <img alt="${isla.nombre}">
+        <span class="card-fallback">${isla.modelo}</span>
+      </div>
+      <div class="card-body">
+        <span class="card-num">Isla ${isla.numero}</span>
+        <h2 class="card-name">${isla.nombre}</h2>
+        <p class="card-desc">${isla.descripcion}</p>
+      </div>
+    `;
+    const thumb = btn.querySelector(".card-thumb");
+    const img = btn.querySelector("img");
+    resolveAssetImg(isla.portada).then(url => {
+      if (url) img.src = url;
+      else thumb.classList.add("is-empty");
+    });
+    btn.addEventListener("click", () => enterIsland(idx, true));
+    el.gridIslas.appendChild(btn);
+  });
+}
+
+function enterIsland(idx, tryCam) {
+  const isla = ISLAS[idx];
+  if (!isla) return;
+  currentIdx = idx;
+
+  const u = new URL(window.location.href);
+  u.searchParams.set("isla", isla.numero);
+  history.replaceState({}, "", u.toString());
+
+  el.hudNum.textContent = `Isla ${isla.numero}`;
+  el.hudName.textContent = isla.nombre;
+  el.statusToast.textContent = `Cargando ${isla.nombre}…`;
+  el.mv.src = isla.modelo;
+
+  el.catalogView.classList.add("is-hidden");
+  el.arStage.classList.add("is-active");
+  document.body.classList.add("in-ar-mode");
+
+  if (tryCam && !camOn) startCamera();
+}
+
+function exitToCatalog() {
+  stopCamera();
+  closeAllModals();
+  el.mv.removeAttribute("src");
+  el.arStage.classList.remove("is-active");
+  el.catalogView.classList.remove("is-hidden");
+  document.body.classList.remove("in-ar-mode");
+  const u = new URL(window.location.href);
+  u.searchParams.delete("isla");
+  history.replaceState({}, "", u.toString());
+}
+
+function closeAllModals() {
+  el.modalGallery.classList.remove("is-open");
+  el.modalPicker.classList.remove("is-open");
+  el.modalQr.classList.remove("is-open");
+}
+
+async function openGalleryModal() {
+  const isla = ISLAS[currentIdx];
+  el.galTitle.textContent = isla.nombre;
+  el.galDesc.textContent = isla.descripcion;
+  el.modalGallery.classList.add("is-open");
+
+  const resolved = await Promise.all(
+    isla.fotos.map(async f => ({ src: await resolveAssetImg(f.archivo), pie: f.pie }))
+  );
+  slides = resolved.filter(x => x.src);
+  if (!slides.length) {
+    const fallback = await resolveAssetImg(isla.portada);
+    if (fallback) slides = [{ src: fallback, pie: isla.nombre }];
+  }
+
+  if (slides.length) {
+    el.galBox.style.display = "block";
+    slideIdx = 0;
+    renderSlide();
+  } else {
+    el.galBox.style.display = "none";
+  }
+}
+
+function renderSlide() {
+  const s = slides[slideIdx];
+  if (!s) return;
+  el.galImg.src = s.src;
+  el.galCap.textContent = s.pie;
+  el.galCount.textContent = `${slideIdx + 1}/${slides.length}`;
+}
+
+function openPickerModal() {
+  el.pickerList.innerHTML = "";
+  ISLAS.forEach((isla, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "island-chip" + (i === currentIdx ? " is-current" : "");
+    b.innerHTML = `<small>Isla ${isla.numero}</small><strong>${isla.nombre}</strong>`;
+    b.addEventListener("click", () => {
+      closeAllModals();
+      enterIsland(i, false);
+    });
+    el.pickerList.appendChild(b);
+  });
+  el.modalPicker.classList.add("is-open");
+}
+
+function openQrModal() {
+  const isla = ISLAS[currentIdx];
+  const u = new URL(window.location.href);
+  u.searchParams.set("isla", isla.numero);
+  const target = u.toString();
+  el.qrTitle.textContent = `QR · ${isla.nombre}`;
+  el.qrUrl.value = target;
+  el.qrImg.src = `https://quickchart.io/qr?size=240&margin=2&text=${encodeURIComponent(target)}`;
+  el.modalQr.classList.add("is-open");
+}
+
+el.mv.addEventListener("load", () => {
+  el.statusToast.textContent = camOn
+    ? "Isla lista en AR · Arrastra para girar"
+    : "Modelo 3D listo · Activa AR arriba a la derecha para usar la cámara";
+});
+el.mv.addEventListener("error", () => {
+  el.statusToast.textContent = "Error al cargar el archivo .glb";
+});
+
+el.btnExit.addEventListener("click", exitToCatalog);
+el.btnArToggle.addEventListener("click", toggleCamera);
+el.btnInfo.addEventListener("click", openGalleryModal);
+el.btnSwitchIsland.addEventListener("click", openPickerModal);
+
+/* Botón central: recentra la isla 3D o abre QR si estás en computador */
+el.btnCenterAction.addEventListener("click", () => {
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile) {
+    el.mv.cameraOrbit = "auto auto auto";
+    el.mv.fieldOfView = "auto";
+    el.statusToast.textContent = "Vista de la isla centrada";
+  } else {
+    openQrModal();
+  }
+});
+
+el.closeGal.addEventListener("click", closeAllModals);
+el.closePicker.addEventListener("click", closeAllModals);
+el.closeQr.addEventListener("click", closeAllModals);
+
+el.prevSlide.addEventListener("click", () => {
+  if (slides.length) {
+    slideIdx = (slideIdx - 1 + slides.length) % slides.length;
+    renderSlide();
+  }
+});
+el.nextSlide.addEventListener("click", () => {
+  if (slides.length) {
+    slideIdx = (slideIdx + 1) % slides.length;
+    renderSlide();
+  }
+});
+
+el.btnOpenNativeAr.addEventListener("click", () => {
+  closeAllModals();
+  if (typeof el.mv.activateAR === "function") el.mv.activateAR();
+});
+el.btnShowQrFromGal.addEventListener("click", () => {
+  closeAllModals();
+  openQrModal();
+});
+el.copyUrl.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(el.qrUrl.value);
+    el.copyUrl.textContent = "¡Enlace copiado!";
+  } catch {
+    el.qrUrl.select();
+    document.execCommand("copy");
+  }
+});
+
+buildCatalog();
+
+const param = new URLSearchParams(window.location.search).get("isla");
+if (param) {
+  const idx = ISLAS.findIndex(x => x.numero === param.padStart(2, "0"));
+  if (idx >= 0) enterIsland(idx, true);
+}
+</script>
+</body>
+</html>
