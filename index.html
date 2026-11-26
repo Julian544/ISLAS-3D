@@ -3,26 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Islas AR · Experiencia Móvil 3D</title>
+<title>Islas AR · Recorrido Interactivo 3D &amp; Realidad Aumentada</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <style>
   :root{
-    --bg:#061118;
-    --surface:#0c1e29;
-    --line:rgba(247,242,232,.16);
-    --line-2:rgba(247,242,232,.32);
-    --ink:#f7f2e8;
-    --ink-2:#c4d6e0;
-    --ink-3:#849fae;
-    --coral:#eb7c52;
-    --sand:#f1dfc0;
+    --bg:#f6f3ed;
+    --surface:#ffffff;
+    --surface-alt:#ede7dc;
+    --ink:#142129;
+    --ink-2:#475863;
+    --ink-3:#73848f;
+    --accent:#d95d39;
+    --accent-dark:#b84726;
+    --accent-soft:rgba(217,93,57,.12);
+    --teal:#184e68;
+    --teal-dark:#11394d;
+    --line:rgba(20,33,41,.10);
+    --line-2:rgba(20,33,41,.18);
     --serif:"Fraunces",Georgia,serif;
     --sans:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
-    --r-lg:24px;
-    --r-md:16px;
+    --r-xl:28px;
+    --r-lg:20px;
+    --r-md:14px;
+    --shadow:0 18px 40px rgba(20,33,41,.08);
     --ease:cubic-bezier(.22,.61,.36,1);
   }
 
@@ -35,121 +41,316 @@
     font-family:var(--sans);
     color:var(--ink);
     background:var(--bg);
+    line-height:1.45;
     -webkit-font-smoothing:antialiased;
   }
 
   body.in-ar-mode{
     overflow:hidden;
     height:100dvh;
+    background:#061118;
   }
 
-  /* ================= CATÁLOGO INICIAL ================= */
-  .catalog-view{
-    max-width:1280px;
+  /* ================= NAVBAR ================= */
+  .site-nav{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:rgba(246,243,237,.9);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1240px;
     margin:0 auto;
-    padding:24px 16px 40px;
+    height:64px;
+    padding:0 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
   }
-  .catalog-view.is-hidden{display:none}
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:1.25rem;
+    color:var(--ink);
+  }
+  .brand-mark{
+    width:12px;
+    height:12px;
+    border-radius:4px;
+    background:var(--accent);
+    transform:rotate(12deg);
+  }
+  .nav-links{
+    display:flex;
+    align-items:center;
+    gap:24px;
+    font-size:.86rem;
+    font-weight:600;
+    color:var(--ink-2);
+  }
+  .nav-links a{
+    color:inherit;
+    text-decoration:none;
+    transition:color .16s var(--ease);
+  }
+  .nav-links a:hover{color:var(--accent)}
+  @media (max-width:640px){.nav-links{display:none}}
 
-  .hero{
+  /* ================= HERO EDITORIAL ================= */
+  .wrap{
+    max-width:1240px;
+    margin:0 auto;
+    padding:28px 24px 64px;
+  }
+  @media (max-width:640px){.wrap{padding:20px 16px 48px}}
+
+  .hero-banner{
+    border-radius:var(--r-xl);
+    background:linear-gradient(135deg,#133344 0%,#1e4f68 58%,#2a6885 100%);
+    color:#f7f2e8;
+    padding:40px 36px;
+    display:grid;
+    grid-template-columns:1.25fr .75fr;
+    gap:28px;
+    align-items:center;
+    box-shadow:0 24px 48px rgba(19,51,68,.18);
+    margin-bottom:36px;
+  }
+  @media (max-width:860px){
+    .hero-banner{grid-template-columns:1fr;padding:28px 22px}
+  }
+  .hero-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,.14);
+    font-size:.74rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .hero-banner h1{
+    margin:0 0 12px;
+    font-family:var(--serif);
+    font-size:clamp(1.9rem,4vw,2.9rem);
+    line-height:1.08;
+  }
+  .hero-banner p{
+    margin:0 0 22px;
+    font-size:.96rem;
+    line-height:1.5;
+    color:rgba(247,242,232,.88);
+    max-width:54ch;
+  }
+  .hero-cta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .btn-solid{
+    height:44px;
+    padding:0 22px;
+    border-radius:12px;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:.88rem;
+    cursor:pointer;
+    transition:transform .15s var(--ease),background .15s var(--ease);
+  }
+  .btn-solid:hover{background:var(--accent-dark);transform:translateY(-2px)}
+
+  .hero-steps{
+    background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:var(--r-lg);
+    padding:20px;
     display:flex;
     flex-direction:column;
-    gap:8px;
-    margin-bottom:24px;
+    gap:12px;
   }
-  .hero-kicker{
-    font-size:.72rem;
-    font-weight:700;
-    letter-spacing:.12em;
+  .hero-steps h3{
+    margin:0;
+    font-size:.82rem;
     text-transform:uppercase;
-    color:var(--coral);
+    letter-spacing:.08em;
+    color:#f1dfc0;
   }
-  .hero-title{
+  .step-item{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:.84rem;
+    line-height:1.35;
+  }
+  .step-badge{
+    width:22px;
+    height:22px;
+    flex:0 0 22px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    font-weight:700;
+    font-size:.74rem;
+    display:grid;
+    place-items:center;
+  }
+
+  /* ================= CATÁLOGO ================= */
+  .sec-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .sec-title{
     margin:0;
     font-family:var(--serif);
-    font-size:clamp(1.75rem,4vw,2.4rem);
-    line-height:1.1;
+    font-size:1.65rem;
   }
-  .hero-sub{
+  .sec-sub{
     margin:0;
-    font-size:.9rem;
+    font-size:.88rem;
     color:var(--ink-2);
-    max-width:60ch;
   }
 
   .grid{
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:16px;
+    gap:22px;
   }
-  @media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  @media (max-width:580px){.grid{grid-template-columns:1fr}}
+  @media (max-width:940px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:600px){.grid{grid-template-columns:1fr}}
 
   .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    overflow:hidden;
     display:flex;
     flex-direction:column;
-    padding:0;
-    text-align:left;
-    border-radius:var(--r-lg);
-    border:1px solid var(--line);
-    background:linear-gradient(180deg,rgba(16,39,54,.82) 0%,rgba(8,20,28,.98) 100%);
-    color:var(--ink);
-    overflow:hidden;
-    cursor:pointer;
-    transition:transform .2s var(--ease),border-color .2s var(--ease);
+    box-shadow:var(--shadow);
+    transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s var(--ease);
   }
-  .card:hover{transform:translateY(-4px);border-color:var(--line-2)}
-
-  .card-thumb{
-    height:176px;
+  .card:hover{
+    transform:translateY(-4px);
+    border-color:var(--line-2);
+    box-shadow:0 24px 48px rgba(20,33,41,.14);
+  }
+  .card-media{
+    height:200px;
+    background:radial-gradient(circle at 50% 60%,#e9e2d5 0%,#dcd3c2 100%);
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:16px;
-    background:radial-gradient(circle at 50% 60%,rgba(235,124,82,.16),rgba(6,17,24,.85) 75%);
+    padding:18px;
+    position:relative;
+    cursor:pointer;
   }
-  .card-thumb img{
+  .card-media img{
     max-width:100%;
     max-height:100%;
     object-fit:contain;
-    filter:drop-shadow(0 12px 20px rgba(0,0,0,.6));
+    filter:drop-shadow(0 14px 18px rgba(20,33,41,.24));
+    transition:transform .28s var(--ease);
   }
-  .card-thumb.is-empty img{display:none}
-  .card-fallback{
-    display:none;
-    font-size:.8rem;
-    font-weight:600;
-    color:var(--ink-3);
-  }
-  .card-thumb.is-empty .card-fallback{display:block}
+  .card:hover .card-media img{transform:scale(1.04)}
+  .card-media.is-empty img{display:none}
+  .card-fallback{display:none;font-size:.82rem;font-weight:600;color:var(--ink-2)}
+  .card-media.is-empty .card-fallback{display:block}
 
-  .card-body{
-    padding:16px 20px 20px;
-    border-top:1px solid var(--line);
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  .card-num{
+  .card-num-pill{
+    position:absolute;
+    top:14px;
+    left:14px;
+    padding:4px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,.92);
     font-size:.7rem;
     font-weight:700;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:var(--coral);
+    color:var(--teal);
   }
-  .card-name{
+
+  .card-content{
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    flex:1;
+  }
+  .card-title{
     margin:0;
     font-family:var(--serif);
-    font-size:1.2rem;
+    font-size:1.25rem;
   }
   .card-desc{
     margin:0;
-    font-size:.84rem;
+    font-size:.86rem;
     color:var(--ink-2);
-    line-height:1.35;
+    line-height:1.42;
+    flex:1;
+  }
+  .card-footer{
+    display:flex;
+    gap:8px;
+    padding-top:8px;
+  }
+  .btn-card-main{
+    flex:1;
+    height:40px;
+    border-radius:10px;
+    border:none;
+    background:var(--teal);
+    color:#fff;
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:.82rem;
+    cursor:pointer;
+    transition:background .16s var(--ease);
+  }
+  .btn-card-main:hover{background:var(--teal-dark)}
+  .btn-card-qr{
+    height:40px;
+    padding:0 14px;
+    border-radius:10px;
+    border:1px solid var(--line-2);
+    background:var(--surface-alt);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:.8rem;
+    cursor:pointer;
+    transition:border-color .16s var(--ease),color .16s var(--ease);
+  }
+  .btn-card-qr:hover{border-color:var(--accent);color:var(--accent)}
+
+  .site-footer{
+    margin-top:56px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    font-size:.82rem;
+    color:var(--ink-3);
   }
 
-  /* ================= VISTA MÓVIL ESTILO AR (REFERENCIA) ================= */
+  /* ================= VISTA MÓVIL / 3D / AR ================= */
   .ar-stage{
     display:none;
     position:fixed;
@@ -158,11 +359,11 @@
     height:100dvh;
     background:radial-gradient(circle at 50% 42%,#1d4863 0%,#061118 85%);
     overflow:hidden;
-    z-index:30;
+    z-index:40;
+    color:#f7f2e8;
   }
   .ar-stage.is-active{display:block}
 
-  /* Video de cámara en vivo detrás del modelo 3D */
   .cam-feed{
     position:absolute;
     inset:0;
@@ -175,33 +376,14 @@
   }
   .cam-feed.is-live{opacity:1}
 
-  /* Sutil viñeta para que los controles siempre se lean bien sobre la cámara */
   .ar-vignette{
     position:absolute;
     inset:0;
     z-index:2;
     pointer-events:none;
-    background:
-      linear-gradient(180deg,rgba(4,10,16,.55) 0%,transparent 22%,transparent 74%,rgba(4,10,16,.72) 100%);
+    background:linear-gradient(180deg,rgba(4,10,16,.58) 0%,transparent 22%,transparent 74%,rgba(4,10,16,.76) 100%);
   }
 
-  /* Visor 3D transparente centrado */
-  .mv-wrap{
-    position:absolute;
-    inset:0;
-    z-index:3;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  model-viewer{
-    width:100%;
-    height:100%;
-    background:transparent;
-    --poster-color:transparent;
-  }
-
-  /* Anillo luminoso en la base estilo referencia */
   .ground-ring{
     position:absolute;
     bottom:23dvh;
@@ -210,13 +392,24 @@
     width:min(68vw,300px);
     height:min(68vw,300px);
     border-radius:50%;
-    border:3px solid rgba(235,124,82,.75);
-    box-shadow:0 0 28px rgba(235,124,82,.55),inset 0 0 22px rgba(235,124,82,.35);
+    border:2px solid rgba(241,223,192,.55);
+    box-shadow:0 0 24px rgba(217,93,57,.35),inset 0 0 18px rgba(241,223,192,.2);
     pointer-events:none;
     z-index:2;
   }
 
-  /* Barra superior estilo app móvil */
+  .mv-wrap{
+    position:absolute;
+    inset:0;
+    z-index:3;
+  }
+  model-viewer{
+    width:100%;
+    height:100%;
+    background:transparent;
+    --poster-color:transparent;
+  }
+
   .hud-top{
     position:absolute;
     top:max(16px,env(safe-area-inset-top));
@@ -235,8 +428,8 @@
     width:46px;
     height:46px;
     border-radius:50%;
-    border:1.5px solid rgba(255,255,255,.45);
-    background:rgba(8,20,30,.52);
+    border:1px solid rgba(247,242,232,.32);
+    background:rgba(8,20,30,.64);
     backdrop-filter:blur(12px);
     -webkit-backdrop-filter:blur(12px);
     color:#fff;
@@ -244,18 +437,18 @@
     place-items:center;
     cursor:pointer;
     font-size:1.15rem;
-    box-shadow:0 8px 20px rgba(0,0,0,.35);
-    transition:transform .15s ease,background .15s ease;
+    transition:transform .15s ease,border-color .15s ease;
   }
-  .circle-btn:active{transform:scale(.92)}
+  .circle-btn:hover{border-color:#f1dfc0}
+  .circle-btn:active{transform:scale(.94)}
 
   .island-pill{
     padding:8px 18px;
     border-radius:999px;
-    background:rgba(8,20,30,.62);
+    background:rgba(8,20,30,.68);
     backdrop-filter:blur(12px);
     -webkit-backdrop-filter:blur(12px);
-    border:1px solid rgba(255,255,255,.28);
+    border:1px solid rgba(247,242,232,.24);
     text-align:center;
     max-width:56vw;
   }
@@ -265,7 +458,7 @@
     font-weight:700;
     letter-spacing:.12em;
     text-transform:uppercase;
-    color:var(--coral);
+    color:#eb7c52;
   }
   .island-pill-name{
     display:block;
@@ -277,13 +470,12 @@
     text-overflow:ellipsis;
   }
 
-  /* Interruptor AR arriba a la derecha (igual a la referencia) */
   .ar-switch{
-    height:42px;
-    padding:0 12px 0 14px;
+    height:44px;
+    padding:0 14px;
     border-radius:999px;
-    border:1.5px solid rgba(255,255,255,.45);
-    background:rgba(8,20,30,.58);
+    border:1px solid rgba(247,242,232,.32);
+    background:rgba(8,20,30,.64);
     backdrop-filter:blur(12px);
     -webkit-backdrop-filter:blur(12px);
     color:#fff;
@@ -294,117 +486,92 @@
     font-size:.8rem;
     font-weight:700;
     cursor:pointer;
-    box-shadow:0 8px 20px rgba(0,0,0,.35);
   }
   .ar-switch-dot{
-    width:22px;
-    height:22px;
+    width:10px;
+    height:10px;
     border-radius:50%;
-    background:#64748b;
+    background:#849fae;
     transition:background .2s ease,box-shadow .2s ease;
   }
+  .ar-switch.is-on{
+    border-color:rgba(235,124,82,.85);
+    background:rgba(217,93,57,.28);
+  }
   .ar-switch.is-on .ar-switch-dot{
-    background:#22d3ee;
-    box-shadow:0 0 12px #22d3ee;
+    background:#eb7c52;
+    box-shadow:0 0 10px #eb7c52;
   }
 
-  /* Barra inferior de 3 botones estilo referencia */
   .hud-bottom{
     position:absolute;
     bottom:max(20px,env(safe-area-inset-bottom));
-    left:20px;
-    right:20px;
+    left:16px;
+    right:16px;
     z-index:10;
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    max-width:440px;
-    margin:0 auto;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
     pointer-events:none;
   }
   .hud-bottom > *{pointer-events:auto}
 
-  .side-action{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:4px;
-    background:none;
-    border:none;
-    color:#fff;
-    cursor:pointer;
-    padding:0;
-    font-family:var(--sans);
-  }
-  .side-action-circle{
-    width:54px;
-    height:54px;
-    border-radius:50%;
-    border:1.5px solid rgba(255,255,255,.45);
-    background:rgba(8,20,30,.58);
+  .hud-pill-btn{
+    height:44px;
+    padding:0 16px;
+    border-radius:999px;
+    border:1px solid rgba(247,242,232,.28);
+    background:rgba(8,20,30,.72);
     backdrop-filter:blur(12px);
     -webkit-backdrop-filter:blur(12px);
-    display:grid;
-    place-items:center;
-    font-size:1.25rem;
-    box-shadow:0 10px 24px rgba(0,0,0,.4);
-  }
-  .side-action span{
-    font-size:.68rem;
+    color:#f7f2e8;
+    font-family:var(--sans);
+    font-size:.82rem;
     font-weight:600;
-    text-shadow:0 1px 4px rgba(0,0,0,.8);
-  }
-
-  /* Botón central principal */
-  .center-orb{
-    width:74px;
-    height:74px;
-    border-radius:50%;
-    border:3px solid #fff;
-    background:linear-gradient(180deg,var(--coral) 0%,#c85228 48%,#f7f2e8 52%,#e2d9c8 100%);
-    box-shadow:0 12px 30px rgba(0,0,0,.55);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
     cursor:pointer;
-    position:relative;
-    display:grid;
-    place-items:center;
-    transition:transform .15s ease;
+    transition:transform .15s ease,border-color .15s ease,background .15s ease;
   }
-  .center-orb::after{
-    content:"";
-    width:22px;
-    height:22px;
-    border-radius:50%;
-    background:#fff;
-    border:3px solid #1e293b;
+  .hud-pill-btn:hover{border-color:#f1dfc0;transform:translateY(-2px)}
+  .hud-pill-btn:active{transform:scale(.97)}
+  .hud-pill-btn.primary{
+    background:#d95d39;
+    border-color:#eb7c52;
+    color:#fff;
+    font-weight:700;
   }
-  .center-orb:active{transform:scale(.92)}
+  .hud-pill-btn.primary:hover{background:#b84726}
 
   .status-toast{
     position:absolute;
-    bottom:112px;
+    bottom:78px;
     left:50%;
     transform:translateX(-50%);
     z-index:9;
     padding:8px 16px;
     border-radius:999px;
-    background:rgba(6,17,24,.78);
-    border:1px solid rgba(255,255,255,.2);
+    background:rgba(6,17,24,.82);
+    border:1px solid rgba(247,242,232,.18);
     font-size:.76rem;
-    color:var(--sand);
+    color:#f1dfc0;
     white-space:nowrap;
-    max-width:90vw;
+    max-width:92vw;
     overflow:hidden;
     text-overflow:ellipsis;
     pointer-events:none;
   }
 
-  /* ================= MODALES (GALERÍA / QR / SELECTOR) ================= */
+  /* ================= MODALES ================= */
   .modal{
     display:none;
     position:fixed;
     inset:0;
     z-index:60;
-    background:rgba(4,10,16,.65);
+    background:rgba(10,18,24,.65);
     backdrop-filter:blur(8px);
     -webkit-backdrop-filter:blur(8px);
     align-items:flex-end;
@@ -419,12 +586,13 @@
     max-height:84dvh;
     overflow-y:auto;
     border-radius:24px;
-    background:#0d212e;
-    border:1px solid rgba(255,255,255,.2);
-    padding:20px;
+    background:#ffffff;
+    color:var(--ink);
+    padding:22px;
     display:flex;
     flex-direction:column;
     gap:16px;
+    box-shadow:0 24px 56px rgba(0,0,0,.28);
   }
   .sheet-head{
     display:flex;
@@ -435,15 +603,15 @@
   .sheet-title{
     margin:0;
     font-family:var(--serif);
-    font-size:1.25rem;
+    font-size:1.3rem;
   }
   .btn-x{
     width:38px;
     height:38px;
     border-radius:50%;
     border:1px solid var(--line-2);
-    background:rgba(255,255,255,.08);
-    color:#fff;
+    background:var(--surface-alt);
+    color:var(--ink);
     font-size:1.2rem;
     cursor:pointer;
   }
@@ -451,7 +619,7 @@
   .gallery-box{
     border-radius:16px;
     overflow:hidden;
-    background:#061118;
+    background:var(--surface-alt);
     border:1px solid var(--line);
   }
   .gallery-box img{
@@ -468,18 +636,16 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
-    background:rgba(255,255,255,.04);
+    gap:12px;
+    background:#fff;
   }
-  .row-btns{
-    display:flex;
-    gap:10px;
-  }
+  .row-btns{display:flex;gap:10px}
   .pill-btn{
     flex:1;
     height:42px;
     border-radius:12px;
     border:1px solid var(--line-2);
-    background:rgba(255,255,255,.08);
+    background:var(--surface-alt);
     color:var(--ink);
     font-family:var(--sans);
     font-weight:600;
@@ -487,9 +653,9 @@
     cursor:pointer;
   }
   .pill-btn.primary{
-    background:var(--coral);
-    border-color:var(--coral);
-    color:#061118;
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
   }
 
   .island-list{
@@ -497,22 +663,23 @@
     grid-template-columns:1fr 1fr;
     gap:10px;
   }
+  @media (max-width:460px){.island-list{grid-template-columns:1fr}}
   .island-chip{
     padding:12px;
     border-radius:14px;
     border:1px solid var(--line);
-    background:rgba(255,255,255,.05);
+    background:var(--surface-alt);
     color:var(--ink);
     text-align:left;
     cursor:pointer;
     font-family:var(--sans);
   }
   .island-chip.is-current{
-    border-color:var(--coral);
-    background:rgba(235,124,82,.18);
+    border-color:var(--accent);
+    background:var(--accent-soft);
   }
   .island-chip strong{display:block;font-size:.88rem}
-  .island-chip small{color:var(--ink-3);font-size:.72rem}
+  .island-chip small{color:var(--ink-2);font-size:.72rem}
 
   .qr-wrap{
     display:flex;
@@ -521,38 +688,102 @@
     gap:12px;
   }
   .qr-frame{
-    width:196px;
-    height:196px;
+    width:212px;
+    height:212px;
     padding:12px;
     border-radius:16px;
     background:#fff;
+    border:1px solid var(--line-2);
+    display:grid;
+    place-items:center;
   }
-  .qr-frame img{width:100%;height:100%;display:block}
+  .qr-frame canvas{
+    width:188px;
+    height:188px;
+    display:block;
+    image-rendering:pixelated;
+  }
   .url-input{
     width:100%;
     height:40px;
     padding:0 12px;
     border-radius:10px;
     border:1px solid var(--line-2);
-    background:#061118;
+    background:var(--surface-alt);
     color:var(--ink);
     font-size:.8rem;
+  }
+  .direct-open-link{
+    font-size:.82rem;
+    font-weight:700;
+    color:var(--teal);
+    text-decoration:underline;
   }
 </style>
 </head>
 <body>
 
-  <!-- VISTA CATÁLOGO (ESCRITORIO / INICIO) -->
-  <main id="catalogView" class="catalog-view">
-    <header class="hero">
-      <span class="hero-kicker">Recorrido Interactivo 3D</span>
-      <h1 class="hero-title">Islas AR</h1>
-      <p class="hero-sub">Selecciona una isla para proyectarla en cámara AR en tu celular o explorar su modelo 3D y galería.</p>
-    </header>
-    <div id="gridIslas" class="grid"></div>
-  </main>
+  <!-- SITIO WEB PRINCIPAL -->
+  <div id="siteShell">
+    <nav class="site-nav">
+      <div class="nav-inner">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>Islas AR</span>
+        </div>
+        <div class="nav-links">
+          <a href="#recorrido">Explorar Islas</a>
+          <a href="#como-funciona">Cómo usar en AR</a>
+        </div>
+      </div>
+    </nav>
 
-  <!-- VISTA INMERSIVA ESTILO APP MÓVIL AR -->
+    <main class="wrap">
+      <section class="hero-banner">
+        <div>
+          <span class="hero-tag">Experiencia 3D &amp; Realidad Aumentada</span>
+          <h1>Explora cada isla en tu espacio real</h1>
+          <p>Un recorrido interactivo por seis escenarios creativos. Abre cualquier isla desde tu navegador o escanea su código QR para proyectarla con la cámara de tu teléfono.</p>
+          <div class="hero-cta-row">
+            <button id="btnStartFirst" class="btn-solid" type="button">Iniciar recorrido AR</button>
+          </div>
+        </div>
+
+        <div id="como-funciona" class="hero-steps">
+          <h3>Cómo funciona</h3>
+          <div class="step-item">
+            <span class="step-badge">1</span>
+            <span>Elige una de las 6 islas en el catálogo o escanea su QR con el celular.</span>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">2</span>
+            <span>Permite el acceso a la cámara o usa AR para ver la isla en tu entorno.</span>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">3</span>
+            <span>Gira con un dedo, haz zoom con dos y abre la galería visual de cada espacio.</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="recorrido">
+        <div class="sec-head">
+          <div>
+            <h2 class="sec-title">Catálogo de Islas</h2>
+            <p class="sec-sub">Selecciona una isla para abrir su visor 3D / AR o genera su QR para celular.</p>
+          </div>
+        </div>
+        <div id="gridIslas" class="grid"></div>
+      </section>
+
+      <footer class="site-footer">
+        <span>Islas AR · Visualización Web 3D</span>
+        <span>Compatible con Android e iOS desde navegador móvil</span>
+      </footer>
+    </main>
+  </div>
+
+  <!-- VISTA MÓVIL / 3D / AR -->
   <section id="arStage" class="ar-stage" aria-label="Visor AR de Isla">
     <video id="camFeed" class="cam-feed" autoplay playsinline muted></video>
     <div class="ar-vignette"></div>
@@ -567,7 +798,7 @@
       </div>
 
       <button id="btnArToggle" class="ar-switch" type="button" aria-label="Alternar cámara AR">
-        <span>AR</span>
+        <span>Cámara</span>
         <span class="ar-switch-dot"></span>
       </button>
     </div>
@@ -583,6 +814,7 @@
         ar
         ar-modes="webxr scene-viewer quick-look"
         ar-scale="auto"
+        environment-image="neutral"
         shadow-intensity="1"
         shadow-softness="0.8"
         alt="Modelo 3D de la isla">
@@ -592,26 +824,34 @@
     <div id="statusToast" class="status-toast">Arrastra con un dedo para girar · Pellizca para acercar</div>
 
     <div class="hud-bottom">
-      <button id="btnInfo" class="side-action" type="button">
-        <span class="side-action-circle">🖼️</span>
+      <button id="btnInfo" class="hud-pill-btn" type="button">
         <span>Galería</span>
       </button>
 
-      <button id="btnCenterAction" class="center-orb" type="button" aria-label="Centrar vista o abrir QR"></button>
+      <button id="btnLaunchArHud" class="hud-pill-btn primary" type="button">
+        <span>Ver en AR</span>
+      </button>
 
-      <button id="btnSwitchIsland" class="side-action" type="button">
-        <span class="side-action-circle">🏝️</span>
+      <button id="btnCenterAction" class="hud-pill-btn" type="button">
+        <span>Centrar</span>
+      </button>
+
+      <button id="btnQrStage" class="hud-pill-btn" type="button">
+        <span>QR</span>
+      </button>
+
+      <button id="btnSwitchIsland" class="hud-pill-btn" type="button">
         <span>Islas</span>
       </button>
     </div>
   </section>
 
-  <!-- MODAL GALERÍA E INFORMACIÓN -->
-  <div id="modalGallery" class="modal" role="dialog" aria-modal="true">
+  <!-- MODAL GALERÍA -->
+  <div id="modalGallery" class="modal" role="dialog" aria-modal="true" aria-labelledby="galTitle">
     <div class="sheet">
       <div class="sheet-head">
         <h2 id="galTitle" class="sheet-title">Galería</h2>
-        <button id="closeGal" class="btn-x" type="button">×</button>
+        <button id="closeGal" class="btn-x" type="button" aria-label="Cerrar galería">×</button>
       </div>
       <p id="galDesc" style="margin:0;font-size:.86rem;color:var(--ink-2)"></p>
       <div id="galBox" class="gallery-box">
@@ -626,39 +866,255 @@
         <button id="nextSlide" class="pill-btn" type="button">Siguiente →</button>
       </div>
       <div class="row-btns">
-        <button id="btnOpenNativeAr" class="pill-btn primary" type="button">Proyectar en piso (AR Nativo)</button>
+        <button id="btnOpenNativeAr" class="pill-btn primary" type="button">Proyectar en espacio (AR)</button>
         <button id="btnShowQrFromGal" class="pill-btn" type="button">Ver QR</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL SELECTOR RÁPIDO DE ISLAS -->
-  <div id="modalPicker" class="modal" role="dialog" aria-modal="true">
+  <!-- MODAL SELECTOR DE ISLAS -->
+  <div id="modalPicker" class="modal" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
     <div class="sheet">
       <div class="sheet-head">
-        <h2 class="sheet-title">Cambiar de isla</h2>
-        <button id="closePicker" class="btn-x" type="button">×</button>
+        <h2 id="pickerTitle" class="sheet-title">Cambiar de isla</h2>
+        <button id="closePicker" class="btn-x" type="button" aria-label="Cerrar selector">×</button>
       </div>
       <div id="pickerList" class="island-list"></div>
     </div>
   </div>
 
   <!-- MODAL QR -->
-  <div id="modalQr" class="modal" role="dialog" aria-modal="true">
+  <div id="modalQr" class="modal" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
     <div class="sheet">
       <div class="sheet-head">
         <h2 id="qrTitle" class="sheet-title">Escanear en celular</h2>
-        <button id="closeQr" class="btn-x" type="button">×</button>
+        <button id="closeQr" class="btn-x" type="button" aria-label="Cerrar código QR">×</button>
       </div>
       <div class="qr-wrap">
-        <div class="qr-frame"><img id="qrImg" alt="Código QR"></div>
+        <div class="qr-frame">
+          <canvas id="qrCanvas" width="188" height="188" aria-label="Código QR de la isla"></canvas>
+        </div>
         <input id="qrUrl" class="url-input" type="text" readonly>
+        <a id="qrDirectLink" class="direct-open-link" href="#" target="_blank" rel="noopener noreferrer">Abrir enlace en otra pestaña</a>
         <button id="copyUrl" class="pill-btn primary" type="button" style="width:100%">Copiar enlace</button>
       </div>
     </div>
   </div>
 
 <script>
+/* Generador QR compacto en JS puro (Modo Byte, corrección L, versiones 1 a 10) */
+const QREncoder = (() => {
+  const EXP = new Array(256), LOG = new Array(256);
+  let x = 1;
+  for (let i = 0; i < 255; i++) {
+    EXP[i] = x;
+    LOG[x] = i;
+    x <<= 1;
+    if (x & 0x100) x ^= 0x11d;
+  }
+  for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+
+  const gfMul = (a, b) => (a && b) ? EXP[(LOG[a] + LOG[b]) % 255] : 0;
+  const polyMul = (p, q) => {
+    const r = new Array(p.length + q.length - 1).fill(0);
+    for (let i = 0; i < p.length; i++)
+      for (let j = 0; j < q.length; j++) r[i + j] ^= gfMul(p[i], q[j]);
+    return r;
+  };
+  const rsDiv = (msg, ecLen) => {
+    let gen = [1];
+    for (let i = 0; i < ecLen; i++) gen = polyMul(gen, [1, EXP[i]]);
+    const out = msg.concat(new Array(ecLen).fill(0));
+    for (let i = 0; i < msg.length; i++) {
+      const c = out[i];
+      if (c) for (let j = 0; j < gen.length; j++) out[i + j] ^= gfMul(gen[j], c);
+    }
+    return out.slice(msg.length);
+  };
+
+  // [version, totalDataCodewords, ecPerBlock, blocks]
+  const SPECS = [
+    null,
+    [1, 19, 7, 1], [2, 34, 10, 1], [3, 55, 15, 1], [4, 80, 20, 1],
+    [5, 108, 26, 1], [6, 136, 18, 2], [7, 156, 20, 2], [8, 194, 24, 2],
+    [9, 232, 30, 2], [10, 274, 18, 4]
+  ];
+  const ALIGN = [null, [], [6,18], [6,22], [6,26], [6,30], [6,34], [6,22,38], [6,24,42], [6,26,46], [6,28,50]];
+
+  function pickVersion(byteLen) {
+    for (let v = 1; v <= 10; v++) {
+      const cap = SPECS[v][1] - (v >= 10 ? 2 : 1);
+      if (byteLen <= cap) return v;
+    }
+    return 10;
+  }
+
+  function buildMatrix(text) {
+    const bytes = new TextEncoder().encode(text);
+    const v = pickVersion(bytes.length);
+    const [, totalData, ecLen, blocks] = SPECS[v];
+    const bits = [];
+    const pushBits = (val, len) => {
+      for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1);
+    };
+    pushBits(4, 4);
+    pushBits(bytes.length, v >= 10 ? 16 : 8);
+    for (const b of bytes) pushBits(b, 8);
+    pushBits(0, Math.min(4, totalData * 8 - bits.length));
+    while (bits.length % 8) bits.push(0);
+
+    const data = [];
+    for (let i = 0; i < bits.length; i += 8) {
+      let byte = 0;
+      for (let k = 0; k < 8; k++) byte = (byte << 1) | bits[i + k];
+      data.push(byte);
+    }
+    const pads = [0xec, 0x11];
+    let pIdx = 0;
+    while (data.length < totalData) data.push(pads[pIdx++ % 2]);
+
+    const shortLen = Math.floor(totalData / blocks);
+    const longCount = totalData % blocks;
+    const dChunks = [], eChunks = [];
+    let offset = 0;
+    for (let b = 0; b < blocks; b++) {
+      const len = shortLen + (b < longCount ? 1 : 0);
+      const chunk = data.slice(offset, offset + len);
+      offset += len;
+      dChunks.push(chunk);
+      eChunks.push(rsDiv(chunk, ecLen));
+    }
+    const stream = [];
+    const maxLen = Math.max(...dChunks.map(c => c.length));
+    for (let i = 0; i < maxLen; i++) for (const c of dChunks) if (i < c.length) stream.push(c[i]);
+    for (let i = 0; i < ecLen; i++) for (const c of eChunks) stream.push(c[i]);
+
+    const size = v * 4 + 17;
+    const m = Array.from({ length: size }, () => new Array(size).fill(null));
+    const fixed = Array.from({ length: size }, () => new Array(size).fill(false));
+    const setFixed = (r, c, val) => {
+      if (r >= 0 && r < size && c >= 0 && c < size) {
+        m[r][c] = val ? 1 : 0;
+        fixed[r][c] = true;
+      }
+    };
+    const finder = (tr, tc) => {
+      for (let r = -1; r <= 7; r++) {
+        for (let c = -1; c <= 7; c++) {
+          const inBox = r >= 0 && r <= 6 && c >= 0 && c <= 6;
+          const border = r === 0 || r === 6 || c === 0 || c === 6;
+          const core = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+          setFixed(tr + r, tc + c, inBox && (border || core));
+        }
+      }
+    };
+    finder(0, 0);
+    finder(0, size - 7);
+    finder(size - 7, 0);
+
+    for (let i = 8; i < size - 8; i++) {
+      setFixed(6, i, i % 2 === 0);
+      setFixed(i, 6, i % 2 === 0);
+    }
+    const centers = ALIGN[v];
+    for (const r of centers) for (const c of centers) {
+      if (fixed[r][c]) continue;
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+        setFixed(r + dr, c + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1);
+      }
+    }
+    setFixed(size - 8, 8, true);
+
+    // Reservar formato
+    for (let i = 0; i < 9; i++) {
+      if (!fixed[8][i]) fixed[8][i] = "fmt";
+      if (!fixed[i][8]) fixed[i][8] = "fmt";
+    }
+    for (let i = 0; i < 8; i++) {
+      if (!fixed[8][size - 1 - i]) fixed[8][size - 1 - i] = "fmt";
+      if (!fixed[size - 1 - i][8]) fixed[size - 1 - i][8] = "fmt";
+    }
+
+    let bIdx = 0;
+    let up = true;
+    for (let col = size - 1; col > 0; col -= 2) {
+      if (col === 6) col--;
+      for (let step = 0; step < size; step++) {
+        const row = up ? size - 1 - step : step;
+        for (const dc of [0, -1]) {
+          const c = col + dc;
+          if (fixed[row][c] !== false) continue;
+          const byte = stream[Math.floor(bIdx / 8)] || 0;
+          const bit = (byte >> (7 - (bIdx % 8))) & 1;
+          m[row][c] = bit;
+          bIdx++;
+        }
+      }
+      up = !up;
+    }
+
+    // Máscara 0: (r + c) % 2 === 0
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (fixed[r][c] === false && (r + c) % 2 === 0) {
+          m[r][c] ^= 1;
+        }
+      }
+    }
+
+    // Formato para EC nivel L (01) y máscara 0 (000) -> 01000
+    let f = 0b01000;
+    let rem = f << 10;
+    const genPoly = 0b10100110111;
+    for (let i = 14; i >= 10; i--) {
+      if (rem & (1 << i)) rem ^= genPoly << (i - 10);
+    }
+    const fmtBits = ((f << 10) | rem) ^ 0b101010000010010;
+    const getFmt = idx => ((fmtBits >> (14 - idx)) & 1) === 1;
+
+    const coordsA = [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    coordsA.forEach(([r, c], idx) => { m[r][c] = getFmt(idx) ? 1 : 0; });
+
+    const coordsB = [
+      [size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],
+      [8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]
+    ];
+    coordsB.forEach(([r, c], idx) => { m[r][c] = getFmt(idx) ? 1 : 0; });
+
+    return m;
+  }
+
+  function draw(canvas, text) {
+    const m = buildMatrix(text);
+    const n = m.length;
+    const quiet = 4;
+    const total = n + quiet * 2;
+    const scale = Math.max(1, Math.floor(canvas.width / total));
+    const drawSize = total * scale;
+    const offset = Math.floor((canvas.width - drawSize) / 2);
+
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#142129";
+
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (m[r][c] === 1) {
+          ctx.fillRect(
+            offset + (c + quiet) * scale,
+            offset + (r + quiet) * scale,
+            scale,
+            scale
+          );
+        }
+      }
+    }
+  }
+
+  return { draw };
+})();
+
 const ISLAS = [
   {
     nombre: "Facultad",
@@ -738,7 +1194,8 @@ const EXTS = [".png", ".jpg", ".jpeg", ".webp"];
 const imgCache = new Map();
 
 const el = {
-  catalogView: document.getElementById("catalogView"),
+  siteShell: document.getElementById("siteShell"),
+  btnStartFirst: document.getElementById("btnStartFirst"),
   gridIslas: document.getElementById("gridIslas"),
   arStage: document.getElementById("arStage"),
   camFeed: document.getElementById("camFeed"),
@@ -749,7 +1206,9 @@ const el = {
   mv: document.getElementById("mv"),
   statusToast: document.getElementById("statusToast"),
   btnInfo: document.getElementById("btnInfo"),
+  btnLaunchArHud: document.getElementById("btnLaunchArHud"),
   btnCenterAction: document.getElementById("btnCenterAction"),
+  btnQrStage: document.getElementById("btnQrStage"),
   btnSwitchIsland: document.getElementById("btnSwitchIsland"),
   modalGallery: document.getElementById("modalGallery"),
   closeGal: document.getElementById("closeGal"),
@@ -769,14 +1228,16 @@ const el = {
   modalQr: document.getElementById("modalQr"),
   closeQr: document.getElementById("closeQr"),
   qrTitle: document.getElementById("qrTitle"),
-  qrImg: document.getElementById("qrImg"),
+  qrCanvas: document.getElementById("qrCanvas"),
   qrUrl: document.getElementById("qrUrl"),
+  qrDirectLink: document.getElementById("qrDirectLink"),
   copyUrl: document.getElementById("copyUrl")
 };
 
 let currentIdx = 0;
 let camStream = null;
 let camOn = false;
+let modelLoaded = false;
 let slides = [];
 let slideIdx = 0;
 
@@ -804,7 +1265,7 @@ async function resolveAssetImg(base) {
 
 async function startCamera() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    el.statusToast.textContent = "Cámara no disponible en este navegador · Modo 3D activo";
+    el.statusToast.textContent = "Cámara no disponible · Usa Ver en AR o gira el modelo 3D";
     return false;
   }
   try {
@@ -816,13 +1277,13 @@ async function startCamera() {
     el.camFeed.classList.add("is-live");
     el.btnArToggle.classList.add("is-on");
     camOn = true;
-    el.statusToast.textContent = "Cámara AR activa · Arrastra para girar la isla";
+    el.statusToast.textContent = "Cámara en vivo activa · Arrastra para girar la isla";
     return true;
   } catch {
     el.camFeed.classList.remove("is-live");
     el.btnArToggle.classList.remove("is-on");
     camOn = false;
-    el.statusToast.textContent = "Modo 3D activo (permite cámara para ver entorno real)";
+    el.statusToast.textContent = "Cámara no concedida · Usa Ver en AR o gira en 3D";
     return false;
   }
 }
@@ -841,37 +1302,65 @@ function stopCamera() {
 function toggleCamera() {
   if (camOn) {
     stopCamera();
-    el.statusToast.textContent = "Cámara pausada · Modo estudio 3D";
+    el.statusToast.textContent = "Cámara apagada · Fondo 3D activo";
   } else {
     startCamera();
+  }
+}
+
+function launchNativeAr() {
+  if (!el.mv) return;
+  if (!modelLoaded) {
+    el.statusToast.textContent = "Espera a que termine de cargar el modelo 3D para lanzar AR…";
+    return;
+  }
+  if (typeof el.mv.activateAR === "function") {
+    try {
+      el.mv.activateAR();
+    } catch {
+      el.statusToast.textContent = "AR no disponible aquí · Usa el botón Cámara o abre en Chrome/Safari móvil";
+    }
+  }
+  if (!el.mv.canActivateAR) {
+    el.statusToast.textContent = "Tu dispositivo/navegador no reporta AR nativo; usa Cámara en vivo o gira en 3D.";
   }
 }
 
 function buildCatalog() {
   el.gridIslas.innerHTML = "";
   ISLAS.forEach((isla, idx) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "card";
-    btn.innerHTML = `
-      <div class="card-thumb">
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-media">
+        <span class="card-num-pill">Isla ${isla.numero}</span>
         <img alt="${isla.nombre}">
         <span class="card-fallback">${isla.modelo}</span>
       </div>
-      <div class="card-body">
-        <span class="card-num">Isla ${isla.numero}</span>
-        <h2 class="card-name">${isla.nombre}</h2>
+      <div class="card-content">
+        <h3 class="card-title">${isla.nombre}</h3>
         <p class="card-desc">${isla.descripcion}</p>
+        <div class="card-footer">
+          <button type="button" class="btn-card-main">Abrir en 3D / AR</button>
+          <button type="button" class="btn-card-qr">QR</button>
+        </div>
       </div>
     `;
-    const thumb = btn.querySelector(".card-thumb");
-    const img = btn.querySelector("img");
+    const media = card.querySelector(".card-media");
+    const img = card.querySelector("img");
     resolveAssetImg(isla.portada).then(url => {
       if (url) img.src = url;
-      else thumb.classList.add("is-empty");
+      else media.classList.add("is-empty");
     });
-    btn.addEventListener("click", () => enterIsland(idx, true));
-    el.gridIslas.appendChild(btn);
+
+    media.addEventListener("click", () => enterIsland(idx, true));
+    card.querySelector(".btn-card-main").addEventListener("click", () => enterIsland(idx, true));
+    card.querySelector(".btn-card-qr").addEventListener("click", () => {
+      currentIdx = idx;
+      openQrModal();
+    });
+
+    el.gridIslas.appendChild(card);
   });
 }
 
@@ -879,6 +1368,7 @@ function enterIsland(idx, tryCam) {
   const isla = ISLAS[idx];
   if (!isla) return;
   currentIdx = idx;
+  modelLoaded = false;
 
   const u = new URL(window.location.href);
   u.searchParams.set("isla", isla.numero);
@@ -886,10 +1376,10 @@ function enterIsland(idx, tryCam) {
 
   el.hudNum.textContent = `Isla ${isla.numero}`;
   el.hudName.textContent = isla.nombre;
-  el.statusToast.textContent = `Cargando ${isla.nombre}…`;
-  el.mv.src = isla.modelo;
+  el.statusToast.textContent = `Cargando ${isla.modelo}…`;
+  el.mv.src = encodeURI(isla.modelo);
 
-  el.catalogView.classList.add("is-hidden");
+  el.siteShell.style.display = "none";
   el.arStage.classList.add("is-active");
   document.body.classList.add("in-ar-mode");
 
@@ -899,9 +1389,10 @@ function enterIsland(idx, tryCam) {
 function exitToCatalog() {
   stopCamera();
   closeAllModals();
+  modelLoaded = false;
   el.mv.removeAttribute("src");
   el.arStage.classList.remove("is-active");
-  el.catalogView.classList.remove("is-hidden");
+  el.siteShell.style.display = "block";
   document.body.classList.remove("in-ar-mode");
   const u = new URL(window.location.href);
   u.searchParams.delete("isla");
@@ -969,39 +1460,50 @@ function openQrModal() {
   const target = u.toString();
   el.qrTitle.textContent = `QR · ${isla.nombre}`;
   el.qrUrl.value = target;
-  el.qrImg.src = `https://quickchart.io/qr?size=240&margin=2&text=${encodeURIComponent(target)}`;
+  el.qrDirectLink.href = target;
+  el.copyUrl.textContent = "Copiar enlace";
+  QREncoder.draw(el.qrCanvas, target);
   el.modalQr.classList.add("is-open");
 }
 
 el.mv.addEventListener("load", () => {
+  modelLoaded = true;
   el.statusToast.textContent = camOn
-    ? "Isla lista en AR · Arrastra para girar"
-    : "Modelo 3D listo · Activa AR arriba a la derecha para usar la cámara";
+    ? "Isla lista · Arrastra para girar o toca Ver en AR"
+    : "Modelo 3D listo · Toca Ver en AR o Cámara";
 });
 el.mv.addEventListener("error", () => {
-  el.statusToast.textContent = "Error al cargar el archivo .glb";
+  modelLoaded = false;
+  el.statusToast.textContent = "No se pudo cargar el archivo .glb";
 });
 
+el.btnStartFirst.addEventListener("click", () => enterIsland(0, true));
 el.btnExit.addEventListener("click", exitToCatalog);
 el.btnArToggle.addEventListener("click", toggleCamera);
 el.btnInfo.addEventListener("click", openGalleryModal);
+el.btnLaunchArHud.addEventListener("click", launchNativeAr);
+el.btnQrStage.addEventListener("click", openQrModal);
 el.btnSwitchIsland.addEventListener("click", openPickerModal);
 
-/* Botón central: recentra la isla 3D o abre QR si estás en computador */
 el.btnCenterAction.addEventListener("click", () => {
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isMobile) {
-    el.mv.cameraOrbit = "auto auto auto";
-    el.mv.fieldOfView = "auto";
-    el.statusToast.textContent = "Vista de la isla centrada";
-  } else {
-    openQrModal();
-  }
+  el.mv.cameraOrbit = "auto auto auto";
+  el.mv.fieldOfView = "auto";
+  el.statusToast.textContent = "Vista de la isla centrada";
 });
 
 el.closeGal.addEventListener("click", closeAllModals);
 el.closePicker.addEventListener("click", closeAllModals);
 el.closeQr.addEventListener("click", closeAllModals);
+
+[el.modalGallery, el.modalPicker, el.modalQr].forEach(m => {
+  m.addEventListener("click", e => {
+    if (e.target === m) closeAllModals();
+  });
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeAllModals();
+});
 
 el.prevSlide.addEventListener("click", () => {
   if (slides.length) {
@@ -1018,7 +1520,7 @@ el.nextSlide.addEventListener("click", () => {
 
 el.btnOpenNativeAr.addEventListener("click", () => {
   closeAllModals();
-  if (typeof el.mv.activateAR === "function") el.mv.activateAR();
+  launchNativeAr();
 });
 el.btnShowQrFromGal.addEventListener("click", () => {
   closeAllModals();
@@ -1031,6 +1533,7 @@ el.copyUrl.addEventListener("click", async () => {
   } catch {
     el.qrUrl.select();
     document.execCommand("copy");
+    el.copyUrl.textContent = "¡Enlace copiado!";
   }
 });
 
