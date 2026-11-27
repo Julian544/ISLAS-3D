@@ -277,20 +277,21 @@
     align-items:center;
     justify-content:center;
     transform:translateY(4px);
-    border-radius:32px;
-    overflow:hidden;
+    background:transparent;
+    overflow:visible;
   }
 
   .island-box img{
     width:100%;
     height:100%;
     object-fit:contain;
+    background:transparent;
     filter:drop-shadow(0 18px 24px rgba(0,0,0,.75));
     transition:transform .36s var(--ease),filter .36s var(--ease);
   }
   .island-box.raw-img{
-    -webkit-mask-image:radial-gradient(ellipse 68% 68% at 50% 50%,#000 48%,transparent 96%);
-    mask-image:radial-gradient(ellipse 68% 68% at 50% 50%,#000 48%,transparent 96%);
+    -webkit-mask-image:radial-gradient(ellipse 72% 72% at 50% 50%,#000 54%,transparent 98%);
+    mask-image:radial-gradient(ellipse 72% 72% at 50% 50%,#000 54%,transparent 98%);
   }
   .card:hover .island-box img{
     transform:scale(1.07) translateY(-4px);
@@ -530,7 +531,7 @@
     bottom:max(20px,env(safe-area-inset-bottom));
     left:16px;
     right:16px;
-    z-index:10;
+    z-index:20;
     display:flex;
     flex-wrap:wrap;
     align-items:center;
@@ -571,13 +572,16 @@
 
   .action-btn.exit-ar{
     display:none;
-    background:rgba(245,158,11,.18);
+    background:rgba(245,158,11,.22);
     border-color:var(--warm);
     color:#fde68a;
+    z-index:25;
   }
   .stage.is-ar-mode .action-btn.exit-ar{
     display:inline-flex;
     align-items:center;
+    justify-content:center;
+    gap:6px;
   }
 
   .modal{
@@ -1053,6 +1057,7 @@ const ISLAS = [
     descripcion: "Arquitectura principal, espacio académico y punto de articulación.",
     modelo: "./FACULTAD-v2.glb",
     portada: "./facultad",
+    aliases: ["./FACULTAD", "./facultad-v1", "./facultad-v2"],
     fotos: [
       { archivo: "./facultad-1", pie: "Vista general y volumen arquitectónico" },
       { archivo: "./facultad-2", pie: "Escala, acceso y relación con el entorno" },
@@ -1065,6 +1070,7 @@ const ISLAS = [
     descripcion: "Trazos, proporción, observación directa y construcción de forma.",
     modelo: "./ISLA-DEL-DIBUJO-v1.glb",
     portada: "./isla-dibujo",
+    aliases: ["./isla-del-dibujo", "./ISLA-DEL-DIBUJO", "./dibujo"],
     fotos: [
       { archivo: "./isla-dibujo-1", pie: "Vista general de la isla" },
       { archivo: "./isla-dibujo-2", pie: "Trazos y estructura" },
@@ -1077,6 +1083,7 @@ const ISLAS = [
     descripcion: "Narrativa impresa, archivo, secuencia editorial y memoria.",
     modelo: "./ISLA-DE-LIBROS-v1.glb",
     portada: "./isla-de-libros",
+    aliases: ["./isla-libros", "./ISLA-DE-LIBROS", "./libros"],
     fotos: [
       { archivo: "./isla-de-libros-1", pie: "Vista general" },
       { archivo: "./isla-de-libros-2", pie: "Composición editorial" },
@@ -1089,6 +1096,7 @@ const ISLAS = [
     descripcion: "Experimentación material, prototipos y oficio manual.",
     modelo: "./ISLA-DEL-TALLER-v1.glb",
     portada: "./isla-del-taller",
+    aliases: ["./isla-taller", "./ISLA-DEL-TALLER", "./taller"],
     fotos: [
       { archivo: "./isla-del-taller-1", pie: "Vista general" },
       { archivo: "./isla-del-taller-2", pie: "Materiales y prototipos" },
@@ -1101,6 +1109,7 @@ const ISLAS = [
     descripcion: "Escenografía, atmósfera, luz y puesta en escena.",
     modelo: "./ISLA-ESCENICA-v1.glb",
     portada: "./isla-escenica",
+    aliases: ["./ISLA-ESCENICA", "./escenica"],
     fotos: [
       { archivo: "./isla-escenica-1", pie: "Vista general" },
       { archivo: "./isla-escenica-2", pie: "Luz y puesta en escena" },
@@ -1113,6 +1122,7 @@ const ISLAS = [
     descripcion: "Sistema digital, retícula, síntesis cromática y lenguaje interactivo.",
     modelo: "./ISLA-PIXEL-v1.glb",
     portada: "./isla-pixel",
+    aliases: ["./ISLA-PIXEL", "./isla_pixel", "./pixel", "./isla-pixel-1", "./ISLA-PIXEL-1"],
     fotos: [
       { archivo: "./isla-pixel-1", pie: "Vista general" },
       { archivo: "./isla-pixel-2", pie: "Gráfica y retícula digital" },
@@ -1287,8 +1297,6 @@ function cleanAndNormalizeIsland(img) {
     norm.height = outH;
     const nctx = norm.getContext("2d");
     nctx.clearRect(0, 0, outW, outH);
-    nctx.fillStyle = "#090e13";
-    nctx.fillRect(0, 0, outW, outH);
     nctx.imageSmoothingEnabled = true;
     nctx.imageSmoothingQuality = "high";
     nctx.drawImage(canvas, minX, minY, cropW, cropH, dx, dy, drawW, drawH);
@@ -1305,7 +1313,6 @@ function probeImg(url) {
     img.crossOrigin = "anonymous";
     img.onload = () => res(cleanAndNormalizeIsland(img));
     img.onerror = () => {
-      // Segundo intento sin crossOrigin por si algún host no envía cabecera CORS
       const fallbackImg = new Image();
       fallbackImg.onload = () => res({ src: fallbackImg.src, cut: false });
       fallbackImg.onerror = () => res(null);
@@ -1315,11 +1322,12 @@ function probeImg(url) {
   });
 }
 
-async function resolveAssetImg(base) {
-  if (imgCache.has(base)) return imgCache.get(base);
+async function resolveAssetImg(base, extraAliases = []) {
+  const cacheKey = `${base}|${extraAliases.join(",")}`;
+  if (imgCache.has(cacheKey)) return imgCache.get(cacheKey);
   const p = (async () => {
-    const candidates = [base, `${base}-v1`, `${base}-v2`];
-    for (const name of candidates) {
+    const bases = [base, `${base}-v1`, `${base}-v2`, ...extraAliases];
+    for (const name of bases) {
       for (const ext of EXTS) {
         const ok = await probeImg(name + ext);
         if (ok) return ok;
@@ -1327,7 +1335,7 @@ async function resolveAssetImg(base) {
     }
     return null;
   })();
-  imgCache.set(base, p);
+  imgCache.set(cacheKey, p);
   return p;
 }
 
@@ -1380,7 +1388,7 @@ async function enterArMode() {
       await el.camFeed.play().catch(() => {});
       el.camFeed.classList.add("is-live");
       el.stage.classList.add("has-cam");
-      setStatus("AR en cámara activo · Clic en el modelo para galería o 'Salir de AR'", true);
+      setStatus("AR activo · Clic en el modelo para galería o 'Salir de AR'", true);
       return;
     } catch {
       setStatus("Sin acceso a cámara · Abre el QR en tu celular para AR completo");
@@ -1415,7 +1423,7 @@ function buildCatalog() {
     const media = card.querySelector(".card-media");
     const box = card.querySelector(".island-box");
     const img = card.querySelector("img");
-    resolveAssetImg(isla.portada).then(res => {
+    resolveAssetImg(isla.portada, isla.aliases || []).then(res => {
       if (res && res.src) {
         img.src = res.src;
         if (!res.cut) box.classList.add("raw-img");
@@ -1502,7 +1510,7 @@ async function openGalleryFor(idx) {
   slides = resolved.filter(Boolean);
 
   if (!slides.length) {
-    const fallback = await resolveAssetImg(isla.portada);
+    const fallback = await resolveAssetImg(isla.portada, isla.aliases || []);
     if (fallback) {
       slides.push({ src: fallback.src, pie: `${isla.nombre} · Vista principal` });
     }
