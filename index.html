@@ -3,29 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Islas AR · Catálogo 3D y Realidad Aumentada</title>
+<title>Islas AR · Exhibición 3D y Realidad Aumentada</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <style>
   :root{
-    --bg:#f6f3ed;
-    --surface:#ffffff;
-    --surface-alt:#ede7dc;
-    --ink:#142129;
-    --ink-2:#475863;
-    --ink-3:#6e808c;
-    --accent:#d95d39;
-    --accent-dark:#b84726;
-    --teal:#184e68;
-    --line:rgba(20,33,41,.10);
-    --line-2:rgba(20,33,41,.18);
-    --serif:"Fraunces",Georgia,serif;
-    --sans:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
-    --r-lg:20px;
+    --bg:#090e13;
+    --surface:rgba(18,28,38,.88);
+    --surface-hover:rgba(26,40,54,.98);
+    --ink:#f2f6f8;
+    --ink-2:#a4b6c4;
+    --ink-3:#6b8090;
+    --accent:#14b886;
+    --accent-dark:#0d946b;
+    --accent-glow:rgba(20,184,134,.26);
+    --warm:#f59e0b;
+    --line:rgba(242,246,248,.09);
+    --line-2:rgba(242,246,248,.19);
+    --display:"Cormorant Garamond",Georgia,serif;
+    --body:"Space Grotesk",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+    --r-xl:26px;
+    --r-lg:22px;
     --r-md:12px;
-    --shadow:0 16px 36px rgba(20,33,41,.07);
+    --shadow:0 24px 52px rgba(0,0,0,.48);
     --ease:cubic-bezier(.22,.61,.36,1);
   }
 
@@ -35,35 +38,54 @@
     margin:0;
     padding:0;
     min-height:100dvh;
-    font-family:var(--sans);
+    font-family:var(--body);
+    font-size:16px;
     color:var(--ink);
-    background:var(--bg);
-    line-height:1.45;
+    background-color:var(--bg);
+    background-image:
+      radial-gradient(1000px 540px at 14% -6%,rgba(20,184,134,.16),transparent 60%),
+      radial-gradient(860px 500px at 90% 6%,rgba(245,158,11,.11),transparent 58%),
+      linear-gradient(to right,rgba(242,246,248,.024) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(242,246,248,.024) 1px,transparent 1px);
+    background-size:auto,auto,48px 48px,48px 48px;
+    line-height:1.6;
+    font-feature-settings:"kern" 1,"liga" 1;
     -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
   }
 
   body.in-viewer{
     overflow:hidden;
     height:100dvh;
-    background:#091720;
+    background:#060a0e;
   }
 
-  /* ================= CATÁLOGO ================= */
+  @keyframes cardEnter{
+    from{opacity:0;transform:translateY(14px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  @keyframes orbitSpin{
+    from{transform:translate(-50%,-50%) rotate(0deg)}
+    to{transform:translate(-50%,-50%) rotate(360deg)}
+  }
+
+  /* ================= BARRA SUPERIOR ================= */
   .topbar{
     position:sticky;
     top:0;
     z-index:20;
-    height:60px;
-    background:rgba(246,243,237,.92);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
+    height:64px;
+    background:rgba(9,14,19,.86);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
     border-bottom:1px solid var(--line);
     display:flex;
     align-items:center;
   }
   .topbar-in{
     width:100%;
-    max-width:1200px;
+    max-width:1240px;
     margin:0 auto;
     padding:0 24px;
     display:flex;
@@ -74,150 +96,297 @@
     display:flex;
     align-items:center;
     gap:10px;
-    font-family:var(--serif);
+    font-family:var(--display);
     font-weight:700;
-    font-size:1.25rem;
+    font-size:1.52rem;
+    line-height:1;
+    letter-spacing:-.01em;
   }
-  .brand-dot{
-    width:10px;
-    height:10px;
-    border-radius:3px;
+  .brand-pulse{
+    width:9px;
+    height:9px;
+    border-radius:50%;
     background:var(--accent);
-    transform:rotate(12deg);
+    box-shadow:0 0 0 4px rgba(20,184,134,.2),0 0 12px var(--accent);
   }
-  .topbar-sub{
-    font-size:.82rem;
-    color:var(--ink-3);
-    font-weight:600;
+  .topbar-tag{
+    padding:6px 12px;
+    border-radius:999px;
+    border:1px solid var(--line-2);
+    background:rgba(242,246,248,.04);
+    font-family:var(--mono);
+    font-size:.72rem;
+    font-weight:500;
+    color:var(--ink-2);
+    letter-spacing:.04em;
+    font-variant-numeric:tabular-nums;
   }
 
+  /* ================= CATÁLOGO ================= */
   .wrap{
-    max-width:1200px;
+    max-width:1240px;
     margin:0 auto;
-    padding:32px 24px 64px;
+    padding:36px 24px 76px;
   }
-  @media (max-width:640px){.wrap{padding:24px 16px 48px}}
+  @media (max-width:640px){.wrap{padding:22px 16px 56px}}
 
   .hero{
-    margin-bottom:28px;
+    position:relative;
+    margin-bottom:36px;
+    padding:36px 40px;
+    border-radius:var(--r-xl);
+    background:
+      radial-gradient(540px 280px at 88% 18%,rgba(20,184,134,.18),transparent 70%),
+      linear-gradient(135deg,rgba(21,32,43,.94) 0%,rgba(12,19,26,.97) 100%);
+    border:1px solid var(--line-2);
+    box-shadow:var(--shadow);
+    overflow:hidden;
   }
-  .hero-kicker{
-    font-size:.72rem;
+  .hero::after{
+    content:"06";
+    position:absolute;
+    right:28px;
+    bottom:-22px;
+    font-family:var(--display);
     font-weight:700;
-    letter-spacing:.1em;
+    font-size:clamp(5.5rem,12vw,9.5rem);
+    line-height:.9;
+    font-variant-numeric:tabular-nums;
+    color:rgba(242,246,248,.035);
+    pointer-events:none;
+    user-select:none;
+  }
+  @media (max-width:640px){.hero{padding:24px 20px}}
+
+  .hero-kicker{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--mono);
+    font-size:.72rem;
+    font-weight:600;
+    letter-spacing:.14em;
     text-transform:uppercase;
     color:var(--accent);
   }
+  .hero-kicker::before{
+    content:"";
+    width:18px;
+    height:2px;
+    background:var(--warm);
+    border-radius:2px;
+  }
   .hero h1{
-    margin:6px 0 8px;
-    font-family:var(--serif);
-    font-size:clamp(1.8rem,3.6vw,2.5rem);
-    line-height:1.1;
+    margin:12px 0 14px;
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(2.2rem,4.4vw,3.35rem);
+    line-height:1.06;
+    letter-spacing:-.02em;
+    max-width:26ch;
   }
   .hero p{
     margin:0;
-    font-size:.95rem;
+    font-size:1rem;
+    line-height:1.65;
     color:var(--ink-2);
-    max-width:58ch;
+    max-width:54ch;
   }
 
   .grid{
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:22px;
+    gap:24px;
+    align-items:stretch;
   }
-  @media (max-width:920px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  @media (max-width:580px){.grid{grid-template-columns:1fr}}
+  @media (max-width:940px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:580px){.grid{grid-template-columns:1fr;gap:18px}}
 
   .card{
+    --aura:rgba(20,184,134,.22);
+    --ring:rgba(20,184,134,.28);
+    position:relative;
+    height:100%;
     background:var(--surface);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
     border:1px solid var(--line);
     border-radius:var(--r-lg);
     overflow:hidden;
     display:flex;
     flex-direction:column;
     text-align:left;
-    padding:0;
-    cursor:pointer;
+    color:var(--ink);
     box-shadow:var(--shadow);
-    transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease);
+    animation:cardEnter .5s var(--ease) both;
+    transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease),background .3s var(--ease);
   }
+  .card:nth-child(2){--aura:rgba(245,158,11,.22);--ring:rgba(245,158,11,.32);animation-delay:.06s}
+  .card:nth-child(3){--aura:rgba(56,189,248,.22);--ring:rgba(56,189,248,.30);animation-delay:.12s}
+  .card:nth-child(4){--aura:rgba(251,113,133,.20);--ring:rgba(251,113,133,.28);animation-delay:.18s}
+  .card:nth-child(5){--aura:rgba(167,139,250,.22);--ring:rgba(167,139,250,.30);animation-delay:.24s}
+  .card:nth-child(6){--aura:rgba(45,212,191,.22);--ring:rgba(45,212,191,.30);animation-delay:.30s}
+
   .card:hover{
-    transform:translateY(-4px);
-    border-color:var(--line-2);
-    box-shadow:0 22px 44px rgba(20,33,41,.13);
+    transform:translateY(-6px);
+    background:var(--surface-hover);
+    border-color:var(--ring);
+    box-shadow:0 28px 56px rgba(0,0,0,.62),0 0 36px var(--aura);
+  }
+
+  .card-main{
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    flex:1;
   }
 
   .card-media{
-    height:200px;
+    height:232px;
     width:100%;
-    background:radial-gradient(circle at 50% 60%,#ebe4d7 0%,#dcd3c2 100%);
+    flex-shrink:0;
+    position:relative;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:20px;
+    background:radial-gradient(circle at 50% 54%,var(--aura) 0%,rgba(9,14,19,.18) 62%,transparent 82%);
+    overflow:hidden;
+  }
+
+  .card-media::before{
+    content:"";
+    position:absolute;
+    top:53%;
+    left:50%;
+    width:168px;
+    height:168px;
+    border-radius:50%;
+    border:1px dashed var(--ring);
+    transform:translate(-50%,-50%);
+    animation:orbitSpin 28s linear infinite;
+    pointer-events:none;
+    opacity:.75;
+    transition:opacity .3s var(--ease);
+  }
+  .card:hover .card-media::before{opacity:1}
+
+  .island-box{
     position:relative;
+    z-index:2;
+    width:228px;
+    height:172px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transform:translateY(4px);
+    border-radius:32px;
+    overflow:hidden;
   }
-  .card-media img{
-    max-width:100%;
-    max-height:100%;
+
+  .island-box img{
+    width:100%;
+    height:100%;
     object-fit:contain;
-    filter:drop-shadow(0 12px 16px rgba(20,33,41,.22));
-    transition:transform .28s var(--ease);
+    filter:drop-shadow(0 18px 24px rgba(0,0,0,.75));
+    transition:transform .36s var(--ease),filter .36s var(--ease);
   }
-  .card:hover .card-media img{transform:scale(1.04)}
-  .card-media.is-empty img{display:none}
+  .island-box.raw-img{
+    -webkit-mask-image:radial-gradient(ellipse 68% 68% at 50% 50%,#000 48%,transparent 96%);
+    mask-image:radial-gradient(ellipse 68% 68% at 50% 50%,#000 48%,transparent 96%);
+  }
+  .card:hover .island-box img{
+    transform:scale(1.07) translateY(-4px);
+    filter:drop-shadow(0 24px 30px rgba(0,0,0,.85));
+  }
+  .card-media.is-empty .island-box img{display:none}
   .card-fallback{
     display:none;
-    font-size:.82rem;
-    font-weight:600;
+    font-family:var(--display);
+    font-size:1.2rem;
     color:var(--ink-2);
   }
   .card-media.is-empty .card-fallback{display:block}
 
-  .card-num{
+  .card-index{
     position:absolute;
     top:14px;
-    left:14px;
-    padding:4px 10px;
-    border-radius:999px;
-    background:rgba(255,255,255,.92);
-    font-size:.7rem;
-    font-weight:700;
-    color:var(--teal);
+    left:16px;
+    z-index:3;
+    font-family:var(--mono);
+    font-size:.74rem;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+    color:var(--accent);
+    letter-spacing:.08em;
+  }
+  .card-arrow{
+    position:absolute;
+    top:12px;
+    right:16px;
+    z-index:3;
+    font-size:.95rem;
+    color:var(--ink-3);
+    transition:transform .25s var(--ease),color .25s var(--ease);
+  }
+  .card:hover .card-arrow{
+    transform:translate(3px,-3px);
+    color:var(--ink);
   }
 
   .card-body{
-    padding:20px;
+    flex:1;
+    padding:18px 22px 22px;
     display:flex;
     flex-direction:column;
-    gap:6px;
+    gap:8px;
+    border-top:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(242,246,248,.015) 0%,transparent 100%);
   }
   .card-title{
     margin:0;
-    font-family:var(--serif);
-    font-size:1.22rem;
+    font-family:var(--display);
+    font-weight:700;
+    font-size:1.56rem;
+    line-height:1.14;
+    letter-spacing:-.01em;
     color:var(--ink);
   }
   .card-desc{
     margin:0;
-    font-size:.86rem;
+    font-size:.9rem;
+    line-height:1.58;
     color:var(--ink-2);
-    line-height:1.4;
+    max-width:38ch;
   }
 
-  /* ================= VISOR 3D / AR ================= */
+  /* ================= VISOR 3D (POR DEFECTO SIN AR) ================= */
   .stage{
     display:none;
     position:fixed;
     inset:0;
     width:100vw;
     height:100dvh;
-    background:radial-gradient(circle at 50% 42%,#1a435c 0%,#07131b 86%);
+    background:
+      radial-gradient(circle at 50% 44%,rgba(20,184,134,.15) 0%,transparent 52%),
+      radial-gradient(circle at 50% 45%,#152430 0%,#060a0e 86%);
     z-index:40;
-    color:#f7f2e8;
+    color:var(--ink);
+    transition:background .3s ease;
   }
   .stage.is-active{display:block}
+
+  .stage.is-ar-mode{
+    background:transparent;
+  }
+  .stage.is-ar-mode.has-cam{
+    background:#000;
+  }
+  .stage.is-ar-mode .stage-vignette{
+    opacity:0;
+  }
+  .stage.is-ar-mode .mv-stage-wrap{
+    animation:none;
+  }
 
   .cam-feed{
     position:absolute;
@@ -227,6 +396,7 @@
     object-fit:cover;
     z-index:1;
     opacity:0;
+    pointer-events:none;
     transition:opacity .3s ease;
   }
   .cam-feed.is-live{opacity:1}
@@ -236,17 +406,31 @@
     inset:0;
     z-index:2;
     pointer-events:none;
-    background:linear-gradient(180deg,rgba(4,10,16,.6) 0%,transparent 22%,transparent 76%,rgba(4,10,16,.78) 100%);
+    background:linear-gradient(180deg,rgba(6,10,14,.72) 0%,transparent 22%,transparent 75%,rgba(6,10,14,.86) 100%);
+    transition:opacity .3s ease;
+  }
+
+  @keyframes islandFloat{
+    0%,100%{transform:translateY(0px)}
+    50%{transform:translateY(-10px)}
+  }
+
+  .mv-stage-wrap{
+    position:absolute;
+    inset:0;
+    z-index:3;
+    animation:islandFloat 4.6s ease-in-out infinite;
   }
 
   model-viewer{
-    position:absolute;
-    inset:0;
     width:100%;
     height:100%;
-    z-index:3;
     background:transparent;
     --poster-color:transparent;
+    cursor:pointer;
+  }
+  model-viewer::part(default-ar-button){
+    display:none;
   }
 
   .load-bar{
@@ -255,12 +439,12 @@
     left:0;
     height:3px;
     width:0%;
-    background:var(--accent);
+    background:linear-gradient(90deg,var(--accent),var(--warm));
+    box-shadow:0 0 12px var(--accent);
     z-index:15;
     transition:width .15s linear;
   }
 
-  /* Barra superior: solo Volver y Título */
   .hud-top{
     position:absolute;
     top:max(16px,env(safe-area-inset-top));
@@ -279,69 +463,81 @@
     height:42px;
     padding:0 16px;
     border-radius:var(--r-md);
-    border:1px solid rgba(247,242,232,.26);
-    background:rgba(9,23,32,.76);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    color:#f7f2e8;
-    font-family:var(--sans);
-    font-size:.84rem;
+    border:1px solid var(--line-2);
+    background:rgba(12,19,26,.8);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:.86rem;
     font-weight:600;
+    letter-spacing:.01em;
     cursor:pointer;
+    transition:border-color .15s ease,background .15s ease;
   }
-  .btn-back:hover{border-color:#f1dfc0}
+  .btn-back:hover{border-color:var(--accent);background:rgba(20,30,40,.92)}
 
   .hud-title-box{
     justify-self:center;
     text-align:center;
-    padding:6px 18px;
+    padding:7px 20px;
     border-radius:var(--r-md);
-    background:rgba(9,23,32,.76);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    border:1px solid rgba(247,242,232,.2);
+    background:rgba(12,19,26,.8);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--line-2);
     max-width:60vw;
   }
   .hud-kicker{
     display:block;
-    font-size:.62rem;
-    font-weight:700;
-    letter-spacing:.12em;
+    font-family:var(--mono);
+    font-size:.66rem;
+    font-weight:600;
+    letter-spacing:.14em;
     text-transform:uppercase;
-    color:#eb7c52;
+    font-variant-numeric:tabular-nums;
+    color:var(--accent);
   }
   .hud-name{
     display:block;
-    font-family:var(--serif);
-    font-size:1rem;
+    font-family:var(--display);
+    font-size:1.25rem;
+    line-height:1.15;
     font-weight:700;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
   }
-  .hud-spacer{width:84px}
+  .hud-spacer{width:88px}
   @media (max-width:520px){.hud-spacer{display:none}}
 
   .status-pill{
     position:absolute;
-    bottom:82px;
+    bottom:84px;
     left:50%;
     transform:translateX(-50%);
     z-index:9;
-    padding:6px 14px;
+    padding:7px 16px;
     border-radius:999px;
-    background:rgba(7,19,27,.84);
-    border:1px solid rgba(247,242,232,.16);
-    font-size:.76rem;
-    color:#f1dfc0;
+    background:rgba(9,14,19,.86);
+    border:1px solid var(--line-2);
+    font-family:var(--body);
+    font-size:.8rem;
+    line-height:1.3;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink-2);
     white-space:nowrap;
-    max-width:90vw;
+    max-width:92vw;
     overflow:hidden;
     text-overflow:ellipsis;
     pointer-events:none;
+    transition:border-color .2s ease,color .2s ease;
+  }
+  .status-pill.is-hot{
+    border-color:var(--accent);
+    color:#a7f3d0;
   }
 
-  /* Barra inferior: solo 3 botones esenciales */
   .hud-bottom{
     position:absolute;
     bottom:max(20px,env(safe-area-inset-bottom));
@@ -349,39 +545,53 @@
     right:16px;
     z-index:10;
     display:flex;
+    flex-wrap:wrap;
     align-items:center;
     justify-content:center;
-    gap:12px;
+    gap:10px;
     pointer-events:none;
   }
   .hud-bottom > *{pointer-events:auto}
 
   .action-btn{
     height:46px;
-    padding:0 20px;
+    padding:0 18px;
     border-radius:var(--r-md);
-    border:1px solid rgba(247,242,232,.28);
-    background:rgba(9,23,32,.8);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    color:#f7f2e8;
-    font-family:var(--sans);
-    font-size:.86rem;
+    border:1px solid var(--line-2);
+    background:rgba(12,19,26,.84);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:.88rem;
     font-weight:600;
+    letter-spacing:.01em;
     cursor:pointer;
     transition:transform .14s ease,border-color .14s ease,background .14s ease;
   }
-  .action-btn:hover{border-color:#f1dfc0}
+  .action-btn:hover{border-color:var(--accent)}
   .action-btn:active{transform:scale(.97)}
 
   .action-btn.primary{
     background:var(--accent);
-    border-color:#eb7c52;
-    color:#fff;
+    border-color:var(--accent);
+    color:#06110d;
     font-weight:700;
-    padding:0 24px;
+    padding:0 22px;
+    box-shadow:0 10px 26px var(--accent-glow);
   }
-  .action-btn.primary:hover{background:var(--accent-dark)}
+  .action-btn.primary:hover{background:var(--accent-dark);color:#fff}
+
+  .action-btn.exit-ar{
+    display:none;
+    background:rgba(245,158,11,.18);
+    border-color:var(--warm);
+    color:#fde68a;
+  }
+  .stage.is-ar-mode .action-btn.exit-ar{
+    display:inline-flex;
+    align-items:center;
+  }
 
   /* ================= MODALES ================= */
   .modal{
@@ -389,9 +599,9 @@
     position:fixed;
     inset:0;
     z-index:60;
-    background:rgba(10,18,24,.65);
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
+    background:rgba(4,8,12,.76);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
     align-items:flex-end;
     justify-content:center;
     padding:16px;
@@ -400,17 +610,18 @@
   .modal.is-open{display:flex}
 
   .sheet{
-    width:min(100%,480px);
-    max-height:85dvh;
+    width:min(100%,510px);
+    max-height:86dvh;
     overflow-y:auto;
     border-radius:22px;
-    background:#ffffff;
+    background:linear-gradient(160deg,#182430 0%,#101821 100%);
+    border:1px solid var(--line-2);
     color:var(--ink);
-    padding:22px;
+    padding:24px;
     display:flex;
     flex-direction:column;
     gap:16px;
-    box-shadow:0 24px 56px rgba(0,0,0,.28);
+    box-shadow:0 28px 64px rgba(0,0,0,.65);
   }
   .sheet-head{
     display:flex;
@@ -420,42 +631,61 @@
   }
   .sheet-title{
     margin:0;
-    font-family:var(--serif);
-    font-size:1.25rem;
+    font-family:var(--display);
+    font-weight:700;
+    font-size:1.55rem;
+    line-height:1.15;
+  }
+  .sheet-copy{
+    margin:0;
+    font-size:.9rem;
+    line-height:1.58;
+    color:var(--ink-2);
+    max-width:48ch;
   }
   .btn-x{
     width:36px;
     height:36px;
     border-radius:10px;
     border:1px solid var(--line-2);
-    background:var(--surface-alt);
+    background:rgba(242,246,248,.05);
     color:var(--ink);
     font-size:1.2rem;
     cursor:pointer;
   }
 
   .gallery-box{
-    border-radius:14px;
+    border-radius:16px;
     overflow:hidden;
-    background:var(--surface-alt);
+    background:radial-gradient(circle at 50% 55%,rgba(20,184,134,.14),rgba(9,14,19,.88) 82%);
     border:1px solid var(--line);
   }
   .gallery-box img{
     width:100%;
-    height:230px;
+    height:236px;
     object-fit:contain;
     display:block;
-    padding:12px;
+    padding:18px;
+    filter:drop-shadow(0 14px 22px rgba(0,0,0,.6));
   }
   .gallery-cap{
-    padding:10px 14px;
-    font-size:.82rem;
+    padding:12px 16px;
+    font-size:.84rem;
+    line-height:1.45;
     color:var(--ink-2);
     display:flex;
     justify-content:space-between;
     align-items:center;
     gap:12px;
-    background:#fff;
+    background:rgba(9,14,19,.76);
+    border-top:1px solid var(--line);
+  }
+  .gallery-cap strong{
+    font-family:var(--mono);
+    font-size:.76rem;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink);
+    white-space:nowrap;
   }
   .row-btns{display:flex;gap:10px}
   .modal-btn{
@@ -463,17 +693,19 @@
     height:42px;
     border-radius:10px;
     border:1px solid var(--line-2);
-    background:var(--surface-alt);
+    background:rgba(242,246,248,.05);
     color:var(--ink);
-    font-family:var(--sans);
+    font-family:var(--body);
+    font-size:.86rem;
     font-weight:600;
-    font-size:.84rem;
     cursor:pointer;
   }
+  .modal-btn:hover{border-color:var(--accent)}
   .modal-btn.primary{
     background:var(--accent);
     border-color:var(--accent);
-    color:#fff;
+    color:#06110d;
+    font-weight:700;
   }
 
   .qr-wrap{
@@ -486,9 +718,9 @@
     width:216px;
     height:216px;
     padding:14px;
-    border-radius:16px;
-    background:#fff;
-    border:1px solid var(--line-2);
+    border-radius:18px;
+    background:#ffffff;
+    box-shadow:0 12px 28px rgba(0,0,0,.35);
     display:grid;
     place-items:center;
   }
@@ -500,13 +732,15 @@
   }
   .url-input{
     width:100%;
-    height:40px;
+    height:42px;
     padding:0 12px;
     border-radius:10px;
     border:1px solid var(--line-2);
-    background:var(--surface-alt);
-    color:var(--ink);
-    font-size:.8rem;
+    background:rgba(9,14,19,.76);
+    color:var(--ink-2);
+    font-family:var(--mono);
+    font-size:.76rem;
+    font-variant-numeric:tabular-nums;
   }
 </style>
 </head>
@@ -517,25 +751,25 @@
     <header class="topbar">
       <div class="topbar-in">
         <div class="brand">
-          <span class="brand-dot"></span>
+          <span class="brand-pulse"></span>
           <span>Islas AR</span>
         </div>
-        <span class="topbar-sub">6 islas · 3D &amp; AR</span>
+        <span class="topbar-tag">06 ISLAS · 3D &amp; AR</span>
       </div>
     </header>
 
     <main class="wrap">
       <section class="hero">
-        <span class="hero-kicker">Recorrido Interactivo</span>
-        <h1>Explora las 6 islas en 3D y Realidad Aumentada</h1>
-        <p>Selecciona una isla para inspeccionar su modelo 3D, abrir su galería o generar el código QR para proyectarla desde tu celular.</p>
+        <span class="hero-kicker">Colección Interactiva</span>
+        <h1>Seis islas en volumen 3D y Realidad Aumentada</h1>
+        <p>Toca una isla para abrir su modelo 3D, gíralo libremente y haz clic sobre el modelo para abrir su galería.</p>
       </section>
 
       <div id="gridIslas" class="grid"></div>
     </main>
   </div>
 
-  <!-- VISOR 3D / AR -->
+  <!-- VISOR 3D (INICIA SIEMPRE EN 3D NORMAL) -->
   <section id="stage" class="stage" aria-label="Visor 3D">
     <div id="loadBar" class="load-bar"></div>
     <video id="camFeed" class="cam-feed" autoplay playsinline muted></video>
@@ -550,26 +784,32 @@
       <div class="hud-spacer"></div>
     </div>
 
-    <model-viewer
-      id="mv"
-      camera-controls
-      touch-action="pan-y"
-      auto-rotate
-      rotation-per-second="16deg"
-      interaction-prompt="none"
-      ar
-      ar-modes="webxr scene-viewer quick-look"
-      ar-scale="auto"
-      environment-image="neutral"
-      shadow-intensity="1"
-      shadow-softness="0.85"
-      alt="Modelo 3D de la isla">
-    </model-viewer>
+    <div class="mv-stage-wrap">
+      <model-viewer
+        id="mv"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        ar-placement="floor"
+        ar-scale="auto"
+        camera-controls
+        touch-action="none"
+        auto-rotate
+        auto-rotate-delay="0"
+        rotation-per-second="22deg"
+        interaction-prompt="auto"
+        environment-image="neutral"
+        exposure="1.08"
+        shadow-intensity="1"
+        shadow-softness="0.85"
+        alt="Modelo 3D de la isla">
+      </model-viewer>
+    </div>
 
-    <div id="statusPill" class="status-pill">Cargando modelo 3D…</div>
+    <div id="statusPill" class="status-pill">Clic en el modelo 3D para abrir galería · Arrastra para girar</div>
 
     <div class="hud-bottom">
       <button id="btnAr" class="action-btn primary" type="button">Ver en AR</button>
+      <button id="btnExitAr" class="action-btn exit-ar" type="button">Salir de AR</button>
       <button id="btnGallery" class="action-btn" type="button">Galería</button>
       <button id="btnQr" class="action-btn" type="button">QR</button>
     </div>
@@ -582,7 +822,7 @@
         <h2 id="galTitle" class="sheet-title">Galería</h2>
         <button id="closeGal" class="btn-x" type="button" aria-label="Cerrar">×</button>
       </div>
-      <p id="galDesc" style="margin:0;font-size:.86rem;color:var(--ink-2)"></p>
+      <p id="galDesc" class="sheet-copy"></p>
       <div id="galBox" class="gallery-box">
         <img id="galImg" alt="">
         <div class="gallery-cap">
@@ -604,7 +844,7 @@
         <h2 id="qrTitle" class="sheet-title">Abrir en celular</h2>
         <button id="closeQr" class="btn-x" type="button" aria-label="Cerrar">×</button>
       </div>
-      <p style="margin:0;font-size:.84rem;color:var(--ink-2)">Escanea este código con la cámara de tu teléfono para abrir directamente esta isla y proyectarla en AR.</p>
+      <p class="sheet-copy">Escanea este código con la cámara de tu teléfono para abrir directamente esta isla en 3D y proyectarla en AR.</p>
       <div class="qr-wrap">
         <div class="qr-frame">
           <canvas id="qrCanvas" width="188" height="188" aria-label="Código QR"></canvas>
@@ -616,7 +856,6 @@
   </div>
 
 <script>
-/* Generador QR local sobre <canvas> */
 const QREncoder = (() => {
   const EXP = new Array(256), LOG = new Array(256);
   let x = 1;
@@ -804,7 +1043,7 @@ const QREncoder = (() => {
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#142129";
+    ctx.fillStyle = "#090e13";
 
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
@@ -913,6 +1152,7 @@ const el = {
   mv: document.getElementById("mv"),
   statusPill: document.getElementById("statusPill"),
   btnAr: document.getElementById("btnAr"),
+  btnExitAr: document.getElementById("btnExitAr"),
   btnGallery: document.getElementById("btnGallery"),
   btnQr: document.getElementById("btnQr"),
   modalGallery: document.getElementById("modalGallery"),
@@ -935,14 +1175,147 @@ const el = {
 
 let currentIdx = 0;
 let modelLoaded = false;
+let arActive = false;
 let camStream = null;
 let slides = [];
 let slideIdx = 0;
 
+function setStatus(msg, hot = false) {
+  el.statusPill.textContent = msg;
+  el.statusPill.classList.toggle("is-hot", hot);
+}
+
+function cleanAndNormalizeIsland(img) {
+  try {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!w || !h) return { src: img.src, cut: false };
+
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
+
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const d = imgData.data;
+    const total = w * h;
+
+    const visited = new Uint8Array(total);
+    const queue = new Int32Array(total);
+    let head = 0, tail = 0;
+
+    const isOuterBg = idx => {
+      const p = idx * 4;
+      if (d[p + 3] === 0) return true;
+      const r = d[p], g = d[p + 1], b = d[p + 2];
+      const sat = Math.max(r, g, b) - Math.min(r, g, b);
+      const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+      return luma >= 202 && sat <= 36;
+    };
+
+    const pushSeed = (x, y) => {
+      const idx = y * w + x;
+      if (!visited[idx] && isOuterBg(idx)) {
+        visited[idx] = 1;
+        queue[tail++] = idx;
+      }
+    };
+
+    for (let x = 0; x < w; x++) {
+      pushSeed(x, 0);
+      pushSeed(x, h - 1);
+    }
+    for (let y = 0; y < h; y++) {
+      pushSeed(0, y);
+      pushSeed(w - 1, y);
+    }
+
+    while (head < tail) {
+      const idx = queue[head++];
+      const x = idx % w;
+      const y = (idx - x) / w;
+      d[idx * 4 + 3] = 0;
+
+      if (x > 0) { const n = idx - 1; if (!visited[n] && isOuterBg(n)) { visited[n] = 1; queue[tail++] = n; } }
+      if (x < w - 1) { const n = idx + 1; if (!visited[n] && isOuterBg(n)) { visited[n] = 1; queue[tail++] = n; } }
+      if (y > 0) { const n = idx - w; if (!visited[n] && isOuterBg(n)) { visited[n] = 1; queue[tail++] = n; } }
+      if (y < h - 1) { const n = idx + w; if (!visited[n] && isOuterBg(n)) { visited[n] = 1; queue[tail++] = n; } }
+    }
+
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const idx = y * w + x;
+        const p = idx * 4;
+        if (d[p + 3] === 0) continue;
+        const touchesBg =
+          visited[idx - 1] === 1 ||
+          visited[idx + 1] === 1 ||
+          visited[idx - w] === 1 ||
+          visited[idx + w] === 1;
+        if (touchesBg) {
+          const r = d[p], g = d[p + 1], b = d[p + 2];
+          const sat = Math.max(r, g, b) - Math.min(r, g, b);
+          const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+          if (luma > 175 && sat < 36) {
+            d[p + 3] = 0;
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+
+    let minX = w, minY = h, maxX = 0, maxY = 0, found = false;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (d[(y * w + x) * 4 + 3] > 20) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+          found = true;
+        }
+      }
+    }
+
+    if (!found) return { src: canvas.toDataURL("image/png"), cut: true };
+
+    const cropW = Math.max(1, maxX - minX + 1);
+    const cropH = Math.max(1, maxY - minY + 1);
+
+    const outW = 456;
+    const outH = 344;
+    const padX = 26;
+    const padY = 22;
+    const availW = outW - padX * 2;
+    const availH = outH - padY * 2;
+
+    const scale = Math.min(availW / cropW, availH / cropH);
+    const drawW = Math.round(cropW * scale);
+    const drawH = Math.round(cropH * scale);
+    const dx = Math.round((outW - drawW) / 2);
+    const dy = Math.round((outH - drawH) / 2);
+
+    const norm = document.createElement("canvas");
+    norm.width = outW;
+    norm.height = outH;
+    const nctx = norm.getContext("2d");
+    nctx.imageSmoothingEnabled = true;
+    nctx.imageSmoothingQuality = "high";
+    nctx.drawImage(canvas, minX, minY, cropW, cropH, dx, dy, drawW, drawH);
+
+    return { src: norm.toDataURL("image/png"), cut: true };
+  } catch {
+    return { src: img.src, cut: false };
+  }
+}
+
 function probeImg(url) {
   return new Promise(res => {
     const img = new Image();
-    img.onload = () => res(url);
+    img.crossOrigin = "anonymous";
+    img.onload = () => res(cleanAndNormalizeIsland(img));
     img.onerror = () => res(null);
     img.src = url;
   });
@@ -964,75 +1337,109 @@ async function resolveAssetImg(base) {
   return p;
 }
 
-function stopCamera() {
+function exitArTo3D(msg) {
+  arActive = false;
   if (camStream) {
     camStream.getTracks().forEach(t => t.stop());
     camStream = null;
   }
   el.camFeed.srcObject = null;
   el.camFeed.classList.remove("is-live");
-}
-
-async function startCameraFallback() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    el.statusPill.textContent = "Para ver en AR, abre este enlace en Chrome (Android) o Safari (iOS).";
-    return;
-  }
-  try {
-    camStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } },
-      audio: false
-    });
-    el.camFeed.srcObject = camStream;
-    el.camFeed.classList.add("is-live");
-    el.statusPill.textContent = "Cámara activa · Arrastra con un dedo para girar la isla";
-  } catch {
-    el.statusPill.textContent = "Para ver en AR, abre este enlace en Chrome (Android) o Safari (iOS).";
+  el.stage.classList.remove("is-ar-mode", "has-cam");
+  if (msg && modelLoaded) {
+    setStatus(msg, true);
   }
 }
 
-async function activateArExperience() {
+async function enterArMode() {
   if (!modelLoaded) {
-    el.statusPill.textContent = "Espera a que termine de cargar el modelo 3D…";
+    setStatus("Espera a que termine de cargar el modelo 3D…");
     return;
   }
-  if (el.mv && typeof el.mv.activateAR === "function" && el.mv.canActivateAR) {
-    stopCamera();
+
+  if (el.mv.canActivateAR && typeof el.mv.activateAR === "function") {
+    setStatus("Abriendo Realidad Aumentada…");
     try {
       await el.mv.activateAR();
       return;
     } catch {
-      // Si el navegador bloquea WebXR/SceneViewer, usa cámara de fondo
+      // Respaldo con cámara en vivo
     }
   }
-  await startCameraFallback();
+
+  arActive = true;
+  el.stage.classList.add("is-ar-mode");
+  setStatus("Activando cámara para AR…");
+
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+        audio: false
+      });
+      if (!arActive) {
+        camStream.getTracks().forEach(t => t.stop());
+        camStream = null;
+        return;
+      }
+      el.camFeed.srcObject = camStream;
+      await el.camFeed.play().catch(() => {});
+      el.camFeed.classList.add("is-live");
+      el.stage.classList.add("has-cam");
+      setStatus("AR en cámara activo · Clic en el modelo para galería o 'Salir de AR'", true);
+      return;
+    } catch {
+      setStatus("Sin acceso a cámara · Abre el QR en tu celular para AR completo");
+      return;
+    }
+  }
+
+  setStatus("Abre el código QR en tu celular para proyectar en AR");
 }
 
+/* Catálogo: al tocar una isla entra directo a su Modelo 3D */
 function buildCatalog() {
   el.gridIslas.innerHTML = "";
   ISLAS.forEach((isla, idx) => {
-    const card = document.createElement("button");
-    card.type = "button";
+    const card = document.createElement("article");
     card.className = "card";
     card.innerHTML = `
-      <div class="card-media">
-        <span class="card-num">Isla ${isla.numero}</span>
-        <img alt="${isla.nombre}">
-        <span class="card-fallback">${isla.nombre} · 3D</span>
-      </div>
-      <div class="card-body">
-        <h2 class="card-title">${isla.nombre}</h2>
-        <p class="card-desc">${isla.descripcion}</p>
+      <div class="card-main" role="button" tabindex="0" aria-label="Abrir modelo 3D de ${isla.nombre}">
+        <div class="card-media">
+          <span class="card-index">${isla.numero}</span>
+          <span class="card-arrow">↗</span>
+          <div class="island-box">
+            <img alt="${isla.nombre}">
+            <span class="card-fallback">${isla.nombre}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">${isla.nombre}</h2>
+          <p class="card-desc">${isla.descripcion}</p>
+        </div>
       </div>
     `;
     const media = card.querySelector(".card-media");
+    const box = card.querySelector(".island-box");
     const img = card.querySelector("img");
-    resolveAssetImg(isla.portada).then(url => {
-      if (url) img.src = url;
-      else media.classList.add("is-empty");
+    resolveAssetImg(isla.portada).then(res => {
+      if (res && res.src) {
+        img.src = res.src;
+        if (!res.cut) box.classList.add("raw-img");
+      } else {
+        media.classList.add("is-empty");
+      }
     });
 
-    card.addEventListener("click", () => openIsland(idx));
+    const cardMain = card.querySelector(".card-main");
+    cardMain.addEventListener("click", () => openIsland(idx));
+    cardMain.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openIsland(idx);
+      }
+    });
+
     el.gridIslas.appendChild(card);
   });
 }
@@ -1042,7 +1449,8 @@ function openIsland(idx) {
   if (!isla) return;
   currentIdx = idx;
   modelLoaded = false;
-  stopCamera();
+
+  exitArTo3D();
 
   const u = new URL(window.location.href);
   u.searchParams.set("isla", isla.numero);
@@ -1051,7 +1459,8 @@ function openIsland(idx) {
   el.hudNum.textContent = `Isla ${isla.numero}`;
   el.hudName.textContent = isla.nombre;
   el.loadBar.style.width = "12%";
-  el.statusPill.textContent = `Cargando ${isla.nombre}…`;
+  setStatus(`Cargando ${isla.nombre} en 3D…`);
+  el.mv.setAttribute("auto-rotate", "");
   el.mv.src = encodeURI(isla.modelo);
 
   el.catalogView.style.display = "none";
@@ -1060,12 +1469,12 @@ function openIsland(idx) {
 }
 
 function closeIsland() {
-  stopCamera();
+  exitArTo3D();
   closeModals();
   modelLoaded = false;
   el.mv.removeAttribute("src");
   el.loadBar.style.width = "0%";
-  el.stage.classList.remove("is-active");
+  el.stage.classList.remove("is-active", "is-ar-mode", "has-cam");
   el.catalogView.style.display = "block";
   document.body.classList.remove("in-viewer");
 
@@ -1079,19 +1488,41 @@ function closeModals() {
   el.modalQr.classList.remove("is-open");
 }
 
-async function openGallery() {
-  const isla = ISLAS[currentIdx];
-  el.galTitle.textContent = isla.nombre;
+async function openGalleryFor(idx) {
+  currentIdx = idx;
+  const isla = ISLAS[idx];
+  if (!isla) return;
+
+  el.galTitle.textContent = `Galería · ${isla.nombre}`;
   el.galDesc.textContent = isla.descripcion;
+  el.galBox.style.display = "block";
+  el.galCap.textContent = "Cargando imágenes…";
+  el.galCount.textContent = "";
   el.modalGallery.classList.add("is-open");
 
   const resolved = await Promise.all(
-    isla.fotos.map(async f => ({ src: await resolveAssetImg(f.archivo), pie: f.pie }))
+    isla.fotos.map(async f => {
+      const res = await resolveAssetImg(f.archivo);
+      return res ? { src: res.src, pie: f.pie } : null;
+    })
   );
-  slides = resolved.filter(x => x.src);
+  slides = resolved.filter(Boolean);
+
   if (!slides.length) {
     const fallback = await resolveAssetImg(isla.portada);
-    if (fallback) slides = [{ src: fallback, pie: isla.nombre }];
+    if (fallback) {
+      slides.push({ src: fallback.src, pie: `${isla.nombre} · Vista principal` });
+    }
+    if (typeof el.mv.toDataURL === "function") {
+      try {
+        const snap = el.mv.toDataURL("image/png");
+        if (snap && snap.length > 100) {
+          slides.push({ src: snap, pie: `${isla.nombre} · Captura 3D` });
+        }
+      } catch {
+        // Ignora si no se puede capturar el canvas
+      }
+    }
   }
 
   if (slides.length) {
@@ -1113,6 +1544,7 @@ function renderSlide() {
 
 function openQr() {
   const isla = ISLAS[currentIdx];
+  if (!isla) return;
   const u = new URL(window.location.href);
   u.searchParams.set("isla", isla.numero);
   const target = u.toString();
@@ -1123,28 +1555,95 @@ function openQr() {
   el.modalQr.classList.add("is-open");
 }
 
+/* Clic dentro del modelo 3D -> abre su galería (sin disparar al arrastrar/rotar) */
+let downPos = null;
+let dragMoved = false;
+
+el.mv.addEventListener("pointerdown", e => {
+  if (!el.stage.classList.contains("is-active")) return;
+  downPos = { x: e.clientX, y: e.clientY };
+  dragMoved = false;
+}, { capture: true });
+
+el.mv.addEventListener("pointermove", e => {
+  if (!downPos || dragMoved) return;
+  const dx = Math.abs(e.clientX - downPos.x);
+  const dy = Math.abs(e.clientY - downPos.y);
+  if (dx > 10 || dy > 10) {
+    dragMoved = true;
+  }
+}, { capture: true });
+
+el.mv.addEventListener("pointerup", e => {
+  if (!downPos || !el.stage.classList.contains("is-active")) {
+    downPos = null;
+    dragMoved = false;
+    return;
+  }
+  const dx = Math.abs(e.clientX - downPos.x);
+  const dy = Math.abs(e.clientY - downPos.y);
+  const wasTap = !dragMoved && dx <= 10 && dy <= 10;
+  downPos = null;
+  dragMoved = false;
+
+  if (wasTap) {
+    openGalleryFor(currentIdx);
+  }
+}, { capture: true });
+
+el.mv.addEventListener("pointercancel", () => {
+  downPos = null;
+  dragMoved = false;
+}, { capture: true });
+
+el.mv.addEventListener("mouseenter", () => {
+  if (modelLoaded && !arActive) {
+    setStatus("Clic sobre el modelo 3D para abrir galería", true);
+  }
+});
+
+el.mv.addEventListener("mouseleave", () => {
+  if (modelLoaded && !arActive) {
+    setStatus("Clic en el modelo 3D para abrir galería · Arrastra para girar", false);
+  }
+});
+
 el.mv.addEventListener("progress", e => {
-  const pct = Math.round((e.detail.totalProgress || 0) * 100);
+  const pct = Math.round(((e.detail && e.detail.totalProgress) || 0) * 100);
   el.loadBar.style.width = `${pct}%`;
-  if (pct < 100) el.statusPill.textContent = `Cargando modelo 3D… ${pct}%`;
+  if (pct < 100) setStatus(`Cargando modelo 3D… ${pct}%`);
 });
 
 el.mv.addEventListener("load", () => {
   modelLoaded = true;
   el.loadBar.style.width = "100%";
   setTimeout(() => { el.loadBar.style.width = "0%"; }, 300);
-  el.statusPill.textContent = "Arrastra para girar · Pellizca para acercar";
+  if (!arActive) {
+    setStatus("Clic en el modelo 3D para abrir galería · Arrastra para girar", true);
+  }
+});
+
+el.mv.addEventListener("ar-status", e => {
+  const status = e.detail && e.detail.status;
+  if (status === "session-started") {
+    setStatus("Sesión AR activa", true);
+  } else if (status === "not-presenting" && !arActive) {
+    setStatus("Clic en el modelo 3D para abrir galería · Arrastra para girar", true);
+  }
 });
 
 el.mv.addEventListener("error", () => {
   modelLoaded = false;
   el.loadBar.style.width = "0%";
-  el.statusPill.textContent = `No se encontró ${ISLAS[currentIdx]?.modelo || "el modelo 3D"}`;
+  setStatus(`No se encontró ${ISLAS[currentIdx]?.modelo || "el modelo 3D"}`);
 });
 
 el.btnBack.addEventListener("click", closeIsland);
-el.btnAr.addEventListener("click", activateArExperience);
-el.btnGallery.addEventListener("click", openGallery);
+el.btnAr.addEventListener("click", enterArMode);
+el.btnExitAr.addEventListener("click", () => {
+  exitArTo3D("Clic en el modelo 3D para abrir galería · Arrastra para girar");
+});
+el.btnGallery.addEventListener("click", () => openGalleryFor(currentIdx));
 el.btnQr.addEventListener("click", openQr);
 
 el.closeGal.addEventListener("click", closeModals);
@@ -1157,7 +1656,13 @@ el.closeQr.addEventListener("click", closeModals);
 });
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") closeModals();
+  if (e.key === "Escape") {
+    if (el.modalGallery.classList.contains("is-open") || el.modalQr.classList.contains("is-open")) {
+      closeModals();
+    } else if (arActive) {
+      exitArTo3D("Clic en el modelo 3D para abrir galería · Arrastra para girar");
+    }
+  }
 });
 
 el.prevSlide.addEventListener("click", () => {
