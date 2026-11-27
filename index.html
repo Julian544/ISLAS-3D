@@ -70,7 +70,6 @@
     to{transform:translate(-50%,-50%) rotate(360deg)}
   }
 
-  /* ================= BARRA SUPERIOR ================= */
   .topbar{
     position:sticky;
     top:0;
@@ -122,7 +121,6 @@
     font-variant-numeric:tabular-nums;
   }
 
-  /* ================= CATÁLOGO ================= */
   .wrap{
     max-width:1240px;
     margin:0 auto;
@@ -359,7 +357,6 @@
     max-width:38ch;
   }
 
-  /* ================= VISOR 3D (POR DEFECTO SIN AR) ================= */
   .stage{
     display:none;
     position:fixed;
@@ -375,18 +372,10 @@
   }
   .stage.is-active{display:block}
 
-  .stage.is-ar-mode{
-    background:transparent;
-  }
-  .stage.is-ar-mode.has-cam{
-    background:#000;
-  }
-  .stage.is-ar-mode .stage-vignette{
-    opacity:0;
-  }
-  .stage.is-ar-mode .mv-stage-wrap{
-    animation:none;
-  }
+  .stage.is-ar-mode{background:transparent}
+  .stage.is-ar-mode.has-cam{background:#000}
+  .stage.is-ar-mode .stage-vignette{opacity:0}
+  .stage.is-ar-mode .mv-stage-wrap{animation:none}
 
   .cam-feed{
     position:absolute;
@@ -429,9 +418,7 @@
     --poster-color:transparent;
     cursor:pointer;
   }
-  model-viewer::part(default-ar-button){
-    display:none;
-  }
+  model-viewer::part(default-ar-button){display:none}
 
   .load-bar{
     position:absolute;
@@ -593,7 +580,6 @@
     align-items:center;
   }
 
-  /* ================= MODALES ================= */
   .modal{
     display:none;
     position:fixed;
@@ -728,6 +714,7 @@
     width:188px;
     height:188px;
     display:block;
+    background:#ffffff;
     image-rendering:pixelated;
   }
   .url-input{
@@ -746,7 +733,6 @@
 </head>
 <body>
 
-  <!-- CATÁLOGO PRINCIPAL -->
   <div id="catalogView">
     <header class="topbar">
       <div class="topbar-in">
@@ -769,7 +755,6 @@
     </main>
   </div>
 
-  <!-- VISOR 3D (INICIA SIEMPRE EN 3D NORMAL) -->
   <section id="stage" class="stage" aria-label="Visor 3D">
     <div id="loadBar" class="load-bar"></div>
     <video id="camFeed" class="cam-feed" autoplay playsinline muted></video>
@@ -815,7 +800,6 @@
     </div>
   </section>
 
-  <!-- MODAL GALERÍA -->
   <div id="modalGallery" class="modal" role="dialog" aria-modal="true" aria-labelledby="galTitle">
     <div class="sheet">
       <div class="sheet-head">
@@ -837,7 +821,6 @@
     </div>
   </div>
 
-  <!-- MODAL QR -->
   <div id="modalQr" class="modal" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
     <div class="sheet">
       <div class="sheet-head">
@@ -1032,6 +1015,11 @@ const QREncoder = (() => {
   }
 
   function draw(canvas, text) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     const m = buildMatrix(text);
     const n = m.length;
     const quiet = 4;
@@ -1040,11 +1028,7 @@ const QREncoder = (() => {
     const drawSize = total * scale;
     const offset = Math.floor((canvas.width - drawSize) / 2);
 
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#090e13";
-
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
         if (m[r][c] === 1) {
@@ -1067,72 +1051,72 @@ const ISLAS = [
     nombre: "Facultad",
     numero: "01",
     descripcion: "Arquitectura principal, espacio académico y punto de articulación.",
-    modelo: "FACULTAD-v2.glb",
-    portada: "facultad",
+    modelo: "./FACULTAD-v2.glb",
+    portada: "./facultad",
     fotos: [
-      { archivo: "facultad-1", pie: "Vista general y volumen arquitectónico" },
-      { archivo: "facultad-2", pie: "Escala, acceso y relación con el entorno" },
-      { archivo: "facultad-3", pie: "Detalle del conjunto" }
+      { archivo: "./facultad-1", pie: "Vista general y volumen arquitectónico" },
+      { archivo: "./facultad-2", pie: "Escala, acceso y relación con el entorno" },
+      { archivo: "./facultad-3", pie: "Detalle del conjunto" }
     ]
   },
   {
     nombre: "Isla del Dibujo",
     numero: "02",
     descripcion: "Trazos, proporción, observación directa y construcción de forma.",
-    modelo: "ISLA-DEL-DIBUJO-v1.glb",
-    portada: "isla-dibujo",
+    modelo: "./ISLA-DEL-DIBUJO-v1.glb",
+    portada: "./isla-dibujo",
     fotos: [
-      { archivo: "isla-dibujo-1", pie: "Vista general de la isla" },
-      { archivo: "isla-dibujo-2", pie: "Trazos y estructura" },
-      { archivo: "isla-dibujo-3", pie: "Detalle ilustrado" }
+      { archivo: "./isla-dibujo-1", pie: "Vista general de la isla" },
+      { archivo: "./isla-dibujo-2", pie: "Trazos y estructura" },
+      { archivo: "./isla-dibujo-3", pie: "Detalle ilustrado" }
     ]
   },
   {
     nombre: "Isla de Libros",
     numero: "03",
     descripcion: "Narrativa impresa, archivo, secuencia editorial y memoria.",
-    modelo: "ISLA-DE-LIBROS-v1.glb",
-    portada: "isla-de-libros",
+    modelo: "./ISLA-DE-LIBROS-v1.glb",
+    portada: "./isla-de-libros",
     fotos: [
-      { archivo: "isla-de-libros-1", pie: "Vista general" },
-      { archivo: "isla-de-libros-2", pie: "Composición editorial" },
-      { archivo: "isla-de-libros-3", pie: "Detalle del entorno" }
+      { archivo: "./isla-de-libros-1", pie: "Vista general" },
+      { archivo: "./isla-de-libros-2", pie: "Composición editorial" },
+      { archivo: "./isla-de-libros-3", pie: "Detalle del entorno" }
     ]
   },
   {
     nombre: "Isla del Taller",
     numero: "04",
     descripcion: "Experimentación material, prototipos y oficio manual.",
-    modelo: "ISLA-DEL-TALLER-v1.glb",
-    portada: "isla-del-taller",
+    modelo: "./ISLA-DEL-TALLER-v1.glb",
+    portada: "./isla-del-taller",
     fotos: [
-      { archivo: "isla-del-taller-1", pie: "Vista general" },
-      { archivo: "isla-del-taller-2", pie: "Materiales y prototipos" },
-      { archivo: "isla-del-taller-3", pie: "Detalle de trabajo" }
+      { archivo: "./isla-del-taller-1", pie: "Vista general" },
+      { archivo: "./isla-del-taller-2", pie: "Materiales y prototipos" },
+      { archivo: "./isla-del-taller-3", pie: "Detalle de trabajo" }
     ]
   },
   {
     nombre: "Isla Escénica",
     numero: "05",
     descripcion: "Escenografía, atmósfera, luz y puesta en escena.",
-    modelo: "ISLA-ESCENICA-v1.glb",
-    portada: "isla-escenica",
+    modelo: "./ISLA-ESCENICA-v1.glb",
+    portada: "./isla-escenica",
     fotos: [
-      { archivo: "isla-escenica-1", pie: "Vista general" },
-      { archivo: "isla-escenica-2", pie: "Luz y puesta en escena" },
-      { archivo: "isla-escenica-3", pie: "Detalle escenográfico" }
+      { archivo: "./isla-escenica-1", pie: "Vista general" },
+      { archivo: "./isla-escenica-2", pie: "Luz y puesta en escena" },
+      { archivo: "./isla-escenica-3", pie: "Detalle escenográfico" }
     ]
   },
   {
     nombre: "Isla Pixel",
     numero: "06",
     descripcion: "Sistema digital, retícula, síntesis cromática y lenguaje interactivo.",
-    modelo: "ISLA-PIXEL-v1.glb",
-    portada: "isla-pixel",
+    modelo: "./ISLA-PIXEL-v1.glb",
+    portada: "./isla-pixel",
     fotos: [
-      { archivo: "isla-pixel-1", pie: "Vista general" },
-      { archivo: "isla-pixel-2", pie: "Gráfica y retícula digital" },
-      { archivo: "isla-pixel-3", pie: "Detalle cromático" }
+      { archivo: "./isla-pixel-1", pie: "Vista general" },
+      { archivo: "./isla-pixel-2", pie: "Gráfica y retícula digital" },
+      { archivo: "./isla-pixel-3", pie: "Detalle cromático" }
     ]
   }
 ];
@@ -1195,6 +1179,7 @@ function cleanAndNormalizeIsland(img) {
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.clearRect(0, 0, w, h);
     ctx.drawImage(img, 0, 0);
 
     const imgData = ctx.getImageData(0, 0, w, h);
@@ -1301,6 +1286,9 @@ function cleanAndNormalizeIsland(img) {
     norm.width = outW;
     norm.height = outH;
     const nctx = norm.getContext("2d");
+    nctx.clearRect(0, 0, outW, outH);
+    nctx.fillStyle = "#090e13";
+    nctx.fillRect(0, 0, outW, outH);
     nctx.imageSmoothingEnabled = true;
     nctx.imageSmoothingQuality = "high";
     nctx.drawImage(canvas, minX, minY, cropW, cropH, dx, dy, drawW, drawH);
@@ -1316,7 +1304,13 @@ function probeImg(url) {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => res(cleanAndNormalizeIsland(img));
-    img.onerror = () => res(null);
+    img.onerror = () => {
+      // Segundo intento sin crossOrigin por si algún host no envía cabecera CORS
+      const fallbackImg = new Image();
+      fallbackImg.onload = () => res({ src: fallbackImg.src, cut: false });
+      fallbackImg.onerror = () => res(null);
+      fallbackImg.src = url;
+    };
     img.src = url;
   });
 }
@@ -1397,7 +1391,6 @@ async function enterArMode() {
   setStatus("Abre el código QR en tu celular para proyectar en AR");
 }
 
-/* Catálogo: al tocar una isla entra directo a su Modelo 3D */
 function buildCatalog() {
   el.gridIslas.innerHTML = "";
   ISLAS.forEach((isla, idx) => {
@@ -1520,7 +1513,7 @@ async function openGalleryFor(idx) {
           slides.push({ src: snap, pie: `${isla.nombre} · Captura 3D` });
         }
       } catch {
-        // Ignora si no se puede capturar el canvas
+        // Ignora si el canvas no permite captura
       }
     }
   }
@@ -1555,7 +1548,6 @@ function openQr() {
   el.modalQr.classList.add("is-open");
 }
 
-/* Clic dentro del modelo 3D -> abre su galería (sin disparar al arrastrar/rotar) */
 let downPos = null;
 let dragMoved = false;
 
