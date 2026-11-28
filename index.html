@@ -1131,13 +1131,7 @@ const ISLAS = [
     descripcion: "Sistema digital, retícula, síntesis cromática y lenguaje interactivo.",
     modelo: "./ISLA-PIXEL-v1.glb",
     portada: "./isla-pixel.png",
-    aliases: [
-      "./isla-pixel",
-      "./ISLA-PIXEL",
-      "./Isla-Pixel",
-      "./isla_pixel",
-      "./pixel"
-    ],
+    aliases: ["./isla-pixel", "./ISLA-PIXEL", "./Isla-Pixel"],
     fotos: [
       { archivo: "./WhatsApp Image 2026-11-27 at 4.14.55 PM.jpeg", pie: "Vista 1" },
       { archivo: "./WhatsApp Image 2026-11-27 at 4.14.56 PM.jpeg", pie: "Vista 2" },
@@ -1147,7 +1141,7 @@ const ISLAS = [
   }
 ];
 
-const EXTS = [".png", ".jpg", ".jpeg", ".webp", ".PNG", ".JPG", ".JPEG", ".WEBP"];
+const EXTS = [".png", ".jpg", ".jpeg", ".webp"];
 const imgCache = new Map();
 
 const el = {
@@ -1290,7 +1284,7 @@ function cleanAndNormalizeIsland(img) {
       }
     }
 
-    if (!found) return { src: img.src, cut: false };
+    if (!found) return { src: canvas.toDataURL("image/png"), cut: true };
 
     const cropW = Math.max(1, maxX - minX + 1);
     const cropH = Math.max(1, maxY - minY + 1);
@@ -1348,10 +1342,10 @@ async function resolveAssetImg(base, extraAliases = [], rawOnly = false) {
   const cacheKey = `${rawOnly ? "raw" : "clean"}|${base}|${extraAliases.join(",")}`;
   if (imgCache.has(cacheKey)) return imgCache.get(cacheKey);
   const p = (async () => {
-    const hasExt = EXTS.some(ext => base.toLowerCase().endsWith(ext.toLowerCase()));
+    const hasExt = EXTS.some(ext => base.toLowerCase().endsWith(ext));
     const bases = hasExt ? [base, ...extraAliases] : [base, `${base}-v1`, `${base}-v2`, ...extraAliases];
     for (const name of bases) {
-      if (EXTS.some(ext => name.toLowerCase().endsWith(ext.toLowerCase()))) {
+      if (EXTS.some(ext => name.toLowerCase().endsWith(ext))) {
         const ok = await probeImg(name, rawOnly);
         if (ok) return ok;
       } else {
@@ -1466,9 +1460,11 @@ function buildCatalog() {
 
     if (isla.portada && isla.portada.toLowerCase().endsWith(".glb")) {
       renderGlbThumb(box, isla.portada, isla.nombre);
+    } else if (isla.numero === "06") {
+      img.onerror = () => renderGlbThumb(box, isla.modelo, isla.nombre);
+      img.src = "./isla-pixel.png";
     } else {
-      const skipCut = isla.numero === "06";
-      resolveAssetImg(isla.portada, isla.aliases || [], skipCut).then(res => {
+      resolveAssetImg(isla.portada, isla.aliases || [], false).then(res => {
         if (res && res.src) {
           img.src = res.src;
         } else {
