@@ -281,7 +281,8 @@
     overflow:visible;
   }
 
-  .island-box img{
+  .island-box img,
+  .island-box .thumb-mv{
     width:100%;
     height:100%;
     object-fit:contain;
@@ -289,20 +290,19 @@
     filter:drop-shadow(0 18px 24px rgba(0,0,0,.75));
     transition:transform .36s var(--ease),filter .36s var(--ease);
   }
-  .card:hover .island-box img{
+  .island-box .thumb-mv{
+    --poster-color:transparent;
+    pointer-events:none;
+  }
+  .island-box .thumb-mv::part(default-ar-button),
+  .island-box .thumb-mv::part(default-progress-bar){
+    display:none;
+  }
+  .card:hover .island-box img,
+  .card:hover .island-box .thumb-mv{
     transform:scale(1.07) translateY(-4px);
     filter:drop-shadow(0 24px 30px rgba(0,0,0,.85));
   }
-  .card-media.is-empty .island-box img{display:none}
-  .card-fallback{
-    display:none;
-    font-family:var(--mono);
-    font-size:.72rem;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:var(--ink-3);
-  }
-  .card-media.is-empty .card-fallback{display:block}
 
   .card-index{
     position:absolute;
@@ -410,14 +410,14 @@
     animation:islandFloat 4.6s ease-in-out infinite;
   }
 
-  model-viewer{
+  #mv{
     width:100%;
     height:100%;
     background:transparent;
     --poster-color:transparent;
     cursor:pointer;
   }
-  model-viewer::part(default-ar-button){display:none}
+  #mv::part(default-ar-button){display:none}
 
   .load-bar{
     position:absolute;
@@ -1130,12 +1130,8 @@ const ISLAS = [
     numero: "06",
     descripcion: "Sistema digital, retícula, síntesis cromática y lenguaje interactivo.",
     modelo: "./ISLA-PIXEL-v1.glb",
-    portada: "./isla-pixel",
-    aliases: [
-      "./ISLA-PIXEL", "./isla_pixel", "./ISLA_PIXEL",
-      "./pixel", "./PIXEL", "./isla-pixel-v1", "./isla-pixel-v2",
-      "./ISLA PIXEL", "./isla pixel"
-    ],
+    portada: "./isla-pixel.png",
+    aliases: ["./isla-pixel", "./ISLA-PIXEL", "./isla_pixel", "./pixel"],
     fotos: [
       { archivo: "./WhatsApp Image 2026-11-27 at 4.14.55 PM.jpeg", pie: "Vista 1" },
       { archivo: "./WhatsApp Image 2026-11-27 at 4.14.56 PM.jpeg", pie: "Vista 2" },
@@ -1358,6 +1354,7 @@ function probeImg(url, rawOnly = false) {
 }
 
 async function resolveAssetImg(base, extraAliases = [], rawOnly = false) {
+  if (!base || base.toLowerCase().endsWith(".glb")) return null;
   const cacheKey = `${rawOnly ? "raw" : "clean"}|${base}|${extraAliases.join(",")}`;
   if (imgCache.has(cacheKey)) return imgCache.get(cacheKey);
   const p = (async () => {
@@ -1378,6 +1375,20 @@ async function resolveAssetImg(base, extraAliases = [], rawOnly = false) {
   })();
   imgCache.set(cacheKey, p);
   return p;
+}
+
+function renderGlbThumb(box, glbUrl, altText) {
+  box.innerHTML = "";
+  const thumb = document.createElement("model-viewer");
+  thumb.className = "thumb-mv";
+  thumb.src = encodeURI(glbUrl);
+  thumb.alt = altText;
+  thumb.setAttribute("environment-image", "neutral");
+  thumb.setAttribute("exposure", "1.12");
+  thumb.setAttribute("shadow-intensity", "0.85");
+  thumb.setAttribute("camera-orbit", "32deg 64deg 108%");
+  thumb.setAttribute("interaction-prompt", "none");
+  box.appendChild(thumb);
 }
 
 function exitArTo3D(msg) {
@@ -1452,7 +1463,6 @@ function buildCatalog() {
           <span class="card-arrow">↗</span>
           <div class="island-box">
             <img alt="${isla.nombre}">
-            <span class="card-fallback">Sin portada</span>
           </div>
         </div>
         <div class="card-body">
@@ -1461,17 +1471,20 @@ function buildCatalog() {
         </div>
       </div>
     `;
-    const media = card.querySelector(".card-media");
     const box = card.querySelector(".island-box");
     const img = card.querySelector("img");
-    resolveAssetImg(isla.portada, isla.aliases || [], false).then(res => {
-      if (res && res.src) {
-        img.src = res.src;
-        if (!res.cut) box.classList.add("raw-img");
-      } else {
-        media.classList.add("is-empty");
-      }
-    });
+
+    if (isla.portada && isla.portada.toLowerCase().endsWith(".glb")) {
+      renderGlbThumb(box, isla.portada, isla.nombre);
+    } else {
+      resolveAssetImg(isla.portada, isla.aliases || [], false).then(res => {
+        if (res && res.src) {
+          img.src = res.src;
+        } else {
+          renderGlbThumb(box, isla.modelo, isla.nombre);
+        }
+      });
+    }
 
     const cardMain = card.querySelector(".card-main");
     cardMain.addEventListener("click", () => openIsland(idx));
@@ -1550,20 +1563,14 @@ async function openGalleryFor(idx) {
   );
   slides = resolved.filter(Boolean);
 
-  if (!slides.length) {
-    const fallback = await resolveAssetImg(isla.portada, isla.aliases || [], true);
-    if (fallback) {
-      slides.push({ src: fallback.src, pie: `${isla.nombre} · Vista principal` });
-    }
-    if (typeof el.mv.toDataURL === "function") {
-      try {
-        const snap = el.mv.toDataURL("image/png");
-        if (snap && snap.length > 100) {
-          slides.push({ src: snap, pie: `${isla.nombre} · Captura 3D` });
-        }
-      } catch {
-        // Ignora si el canvas no permite captura
+  if (!slides.length && typeof el.mv.toDataURL === "function") {
+    try {
+      const snap = el.mv.toDataURL("image/png");
+      if (snap && snap.length > 100) {
+        slides.push({ src: snap, pie: `${isla.nombre} · Captura 3D` });
       }
+    } catch {
+      // Ignora si el canvas no permite captura
     }
   }
 
