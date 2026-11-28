@@ -657,6 +657,12 @@
     display:block;
     background:transparent;
   }
+  .gallery-empty{
+    padding:28px 18px;
+    text-align:center;
+    font-size:.86rem;
+    color:var(--ink-2);
+  }
   .gallery-cap{
     padding:12px 16px;
     font-size:.84rem;
@@ -812,6 +818,9 @@
       <p id="galDesc" class="sheet-copy"></p>
       <div id="galBox" class="gallery-box">
         <img id="galImg" alt="">
+        <div id="galEmpty" class="gallery-empty" style="display:none">
+          No se encontraron imágenes cargadas para esta galería en el repositorio.
+        </div>
         <div class="gallery-cap">
           <span id="galCap"></span>
           <strong id="galCount"></strong>
@@ -1167,6 +1176,7 @@ const el = {
   galDesc: document.getElementById("galDesc"),
   galBox: document.getElementById("galBox"),
   galImg: document.getElementById("galImg"),
+  galEmpty: document.getElementById("galEmpty"),
   galCap: document.getElementById("galCap"),
   galCount: document.getElementById("galCount"),
   prevSlide: document.getElementById("prevSlide"),
@@ -1325,6 +1335,10 @@ function probeImg(url, rawOnly = false) {
     const img = new Image();
     if (!rawOnly) img.crossOrigin = "anonymous";
     img.onload = () => {
+      if (!img.naturalWidth || !img.naturalHeight) {
+        res(null);
+        return;
+      }
       if (rawOnly) {
         res({ src: safeUrl, cut: false });
       } else {
@@ -1337,7 +1351,13 @@ function probeImg(url, rawOnly = false) {
         return;
       }
       const fallbackImg = new Image();
-      fallbackImg.onload = () => res({ src: safeUrl, cut: false });
+      fallbackImg.onload = () => {
+        if (!fallbackImg.naturalWidth || !fallbackImg.naturalHeight) {
+          res(null);
+          return;
+        }
+        res({ src: safeUrl, cut: false });
+      };
       fallbackImg.onerror = () => res(null);
       fallbackImg.src = safeUrl;
     };
@@ -1525,7 +1545,8 @@ async function openGalleryFor(idx) {
 
   el.galTitle.textContent = `Galería · ${isla.nombre}`;
   el.galDesc.textContent = isla.descripcion;
-  el.galBox.style.display = "block";
+  el.galImg.style.display = "none";
+  el.galEmpty.style.display = "none";
   el.galCap.textContent = "Cargando imágenes…";
   el.galCount.textContent = "";
   el.modalGallery.classList.add("is-open");
@@ -1538,29 +1559,16 @@ async function openGalleryFor(idx) {
   );
   slides = resolved.filter(Boolean);
 
-  if (!slides.length) {
-    const fallback = await resolveAssetImg(isla.portada, isla.aliases || [], true);
-    if (fallback) {
-      slides.push({ src: fallback.src, pie: `${isla.nombre} · Vista principal` });
-    }
-    if (typeof el.mv.toDataURL === "function") {
-      try {
-        const snap = el.mv.toDataURL("image/png");
-        if (snap && snap.length > 100) {
-          slides.push({ src: snap, pie: `${isla.nombre} · Captura 3D` });
-        }
-      } catch {
-        // Ignora si el canvas no permite captura
-      }
-    }
-  }
-
   if (slides.length) {
-    el.galBox.style.display = "block";
+    el.galImg.style.display = "block";
+    el.galEmpty.style.display = "none";
     slideIdx = 0;
     renderSlide();
   } else {
-    el.galBox.style.display = "none";
+    el.galImg.style.display = "none";
+    el.galEmpty.style.display = "block";
+    el.galCap.textContent = "Sin imágenes disponibles";
+    el.galCount.textContent = "0 / 0";
   }
 }
 
