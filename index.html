@@ -290,8 +290,8 @@
     transition:transform .36s var(--ease),filter .36s var(--ease);
   }
   .island-box.raw-img{
-    -webkit-mask-image:radial-gradient(ellipse 72% 72% at 50% 50%,#000 54%,transparent 98%);
-    mask-image:radial-gradient(ellipse 72% 72% at 50% 50%,#000 54%,transparent 98%);
+    border-radius:12px;
+    overflow:hidden;
   }
   .card:hover .island-box img{
     transform:scale(1.07) translateY(-4px);
@@ -1088,12 +1088,7 @@ const ISLAS = [
     descripcion: "Narrativa impresa, archivo, secuencia editorial y memoria.",
     modelo: "./ISLA-DE-LIBROS-v1.glb",
     portada: "./isla-de-libros",
-    aliases: [
-      "./isla-libros",
-      "./ISLA-DE-LIBROS",
-      "./libros",
-      "./WhatsApp Image 2026-11-27 at 4.38.48 PM.jpeg"
-    ],
+    aliases: ["./isla-libros", "./ISLA-DE-LIBROS", "./libros"],
     fotos: [
       { archivo: "./WhatsApp Image 2026-11-27 at 4.38.48 PM.jpeg", pie: "Vista 1" },
       { archivo: "./WhatsApp Image 2026-11-27 at 4.38.48 PM (1).jpeg", pie: "Vista 2" },
@@ -1106,12 +1101,7 @@ const ISLAS = [
     descripcion: "Experimentación material, prototipos y oficio manual.",
     modelo: "./ISLA-DEL-TALLER-v1.glb",
     portada: "./isla-del-taller",
-    aliases: [
-      "./isla-taller",
-      "./ISLA-DEL-TALLER",
-      "./taller",
-      "./WhatsApp Image 2026-11-27 at 8.12.08 PM.jpeg"
-    ],
+    aliases: ["./isla-taller", "./ISLA-DEL-TALLER", "./taller"],
     fotos: [
       { archivo: "./WhatsApp Image 2026-11-27 at 8.12.08 PM.jpeg", pie: "Vista 1" },
       { archivo: "./WhatsApp Image 2026-11-27 at 8.12.08 PM (1).jpeg", pie: "Vista 2" },
@@ -1127,11 +1117,7 @@ const ISLAS = [
     descripcion: "Escenografía, atmósfera, luz y puesta en escena.",
     modelo: "./ISLA-ESCENICA-v1.glb",
     portada: "./isla-escenica",
-    aliases: [
-      "./ISLA-ESCENICA",
-      "./escenica",
-      "./WhatsApp Image 2026-11-27 at 8.06.31 PM.jpeg"
-    ],
+    aliases: ["./ISLA-ESCENICA", "./escenica"],
     fotos: [
       { archivo: "./WhatsApp Image 2026-11-27 at 8.06.31 PM.jpeg", pie: "Vista 1" },
       { archivo: "./WhatsApp Image 2026-11-27 at 8.06.32 PM.jpeg", pie: "Vista 2" },
@@ -1147,12 +1133,7 @@ const ISLAS = [
     descripcion: "Sistema digital, retícula, síntesis cromática y lenguaje interactivo.",
     modelo: "./ISLA-PIXEL-v1.glb",
     portada: "./isla-pixel",
-    aliases: [
-      "./ISLA-PIXEL",
-      "./isla_pixel",
-      "./pixel",
-      "./WhatsApp Image 2026-11-27 at 4.14.55 PM.jpeg"
-    ],
+    aliases: ["./ISLA-PIXEL", "./isla_pixel", "./pixel"],
     fotos: [
       { archivo: "./WhatsApp Image 2026-11-27 at 4.14.55 PM.jpeg", pie: "Vista 1" },
       { archivo: "./WhatsApp Image 2026-11-27 at 4.14.56 PM.jpeg", pie: "Vista 2" },
@@ -1351,6 +1332,10 @@ function probeImg(url, rawOnly = false) {
       }
     };
     img.onerror = () => {
+      if (rawOnly) {
+        res(null);
+        return;
+      }
       const fallbackImg = new Image();
       fallbackImg.onload = () => res({ src: safeUrl, cut: false });
       fallbackImg.onerror = () => res(null);
