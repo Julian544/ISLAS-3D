@@ -290,8 +290,8 @@
     transition:transform .36s var(--ease),filter .36s var(--ease);
   }
   .island-box.raw-img{
-    border-radius:12px;
-    overflow:hidden;
+    -webkit-mask-image:radial-gradient(ellipse 72% 72% at 50% 50%,#000 54%,transparent 98%);
+    mask-image:radial-gradient(ellipse 72% 72% at 50% 50%,#000 54%,transparent 98%);
   }
   .card:hover .island-box img{
     transform:scale(1.07) translateY(-4px);
@@ -657,12 +657,6 @@
     display:block;
     background:transparent;
   }
-  .gallery-empty{
-    padding:28px 18px;
-    text-align:center;
-    font-size:.86rem;
-    color:var(--ink-2);
-  }
   .gallery-cap{
     padding:12px 16px;
     font-size:.84rem;
@@ -818,9 +812,6 @@
       <p id="galDesc" class="sheet-copy"></p>
       <div id="galBox" class="gallery-box">
         <img id="galImg" alt="">
-        <div id="galEmpty" class="gallery-empty" style="display:none">
-          No se encontraron imágenes cargadas para esta galería en el repositorio.
-        </div>
         <div class="gallery-cap">
           <span id="galCap"></span>
           <strong id="galCount"></strong>
@@ -1142,7 +1133,7 @@ const ISLAS = [
     descripcion: "Sistema digital, retícula, síntesis cromática y lenguaje interactivo.",
     modelo: "./ISLA-PIXEL-v1.glb",
     portada: "./isla-pixel",
-    aliases: ["./ISLA-PIXEL", "./isla_pixel", "./pixel"],
+    aliases: ["./ISLA-PIXEL", "./isla_pixel", "./pixel", "./isla-pixel-v1", "./isla-pixel-v2"],
     fotos: [
       { archivo: "./WhatsApp Image 2026-11-27 at 4.14.55 PM.jpeg", pie: "Vista 1" },
       { archivo: "./WhatsApp Image 2026-11-27 at 4.14.56 PM.jpeg", pie: "Vista 2" },
@@ -1176,7 +1167,6 @@ const el = {
   galDesc: document.getElementById("galDesc"),
   galBox: document.getElementById("galBox"),
   galImg: document.getElementById("galImg"),
-  galEmpty: document.getElementById("galEmpty"),
   galCap: document.getElementById("galCap"),
   galCount: document.getElementById("galCount"),
   prevSlide: document.getElementById("prevSlide"),
@@ -1365,8 +1355,8 @@ function probeImg(url, rawOnly = false) {
   });
 }
 
-async function resolveAssetImg(base, extraAliases = [], rawOnly = false) {
-  const cacheKey = `${rawOnly ? "raw" : "clean"}|${base}|${extraAliases.join(",")}`;
+async function resolveAssetImg(base, extraAliases = [], rawOnly = false, fallbackList = []) {
+  const cacheKey = `${rawOnly ? "raw" : "clean"}|${base}|${extraAliases.join(",")}|${fallbackList.join(",")}`;
   if (imgCache.has(cacheKey)) return imgCache.get(cacheKey);
   const p = (async () => {
     const hasExt = EXTS.some(ext => base.toLowerCase().endsWith(ext));
@@ -1381,6 +1371,10 @@ async function resolveAssetImg(base, extraAliases = [], rawOnly = false) {
           if (ok) return ok;
         }
       }
+    }
+    for (const fb of fallbackList) {
+      const ok = await probeImg(fb, rawOnly);
+      if (ok) return ok;
     }
     return null;
   })();
@@ -1472,7 +1466,8 @@ function buildCatalog() {
     const media = card.querySelector(".card-media");
     const box = card.querySelector(".island-box");
     const img = card.querySelector("img");
-    resolveAssetImg(isla.portada, isla.aliases || [], false).then(res => {
+    const fallbackFotos = (isla.fotos || []).map(f => f.archivo);
+    resolveAssetImg(isla.portada, isla.aliases || [], false, fallbackFotos).then(res => {
       if (res && res.src) {
         img.src = res.src;
         if (!res.cut) box.classList.add("raw-img");
@@ -1545,8 +1540,7 @@ async function openGalleryFor(idx) {
 
   el.galTitle.textContent = `Galería · ${isla.nombre}`;
   el.galDesc.textContent = isla.descripcion;
-  el.galImg.style.display = "none";
-  el.galEmpty.style.display = "none";
+  el.galBox.style.display = "block";
   el.galCap.textContent = "Cargando imágenes…";
   el.galCount.textContent = "";
   el.modalGallery.classList.add("is-open");
@@ -1559,16 +1553,29 @@ async function openGalleryFor(idx) {
   );
   slides = resolved.filter(Boolean);
 
+  if (!slides.length) {
+    const fallback = await resolveAssetImg(isla.portada, isla.aliases || [], true);
+    if (fallback) {
+      slides.push({ src: fallback.src, pie: `${isla.nombre} · Vista principal` });
+    }
+    if (typeof el.mv.toDataURL === "function") {
+      try {
+        const snap = el.mv.toDataURL("image/png");
+        if (snap && snap.length > 100) {
+          slides.push({ src: snap, pie: `${isla.nombre} · Captura 3D` });
+        }
+      } catch {
+        // Ignora si el canvas no permite captura
+      }
+    }
+  }
+
   if (slides.length) {
-    el.galImg.style.display = "block";
-    el.galEmpty.style.display = "none";
+    el.galBox.style.display = "block";
     slideIdx = 0;
     renderSlide();
   } else {
-    el.galImg.style.display = "none";
-    el.galEmpty.style.display = "block";
-    el.galCap.textContent = "Sin imágenes disponibles";
-    el.galCount.textContent = "0 / 0";
+    el.galBox.style.display = "none";
   }
 }
 
@@ -1717,12 +1724,17 @@ el.nextSlide.addEventListener("click", () => {
 
 el.copyUrl.addEventListener("click", async () => {
   try {
-    await navigator.clipboard.writeText(el.qrUrl.value);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(el.qrUrl.value);
+    } else {
+      el.qrUrl.focus();
+      el.qrUrl.select();
+    }
     el.copyUrl.textContent = "¡Enlace copiado!";
   } catch {
+    el.qrUrl.focus();
     el.qrUrl.select();
-    document.execCommand("copy");
-    el.copyUrl.textContent = "¡Enlace copiado!";
+    el.copyUrl.textContent = "Selecciona y copia el enlace";
   }
 });
 
